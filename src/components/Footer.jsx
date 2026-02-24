@@ -2,7 +2,7 @@ import ValoraLogo from "./ValoraLogo";
 import C from "../constants/colors";
 
 const COLS = [
-  { title: "Explore",  links: [{ label: "Buy",     page: "buy" }, { label: "Rent", page: "rent" }, { label: "Sell", page: "sell" }] },
+  { title: "Explore",  links: [{ label: "Buy",      page: "buy" }, { label: "Rent", page: "rent" }, { label: "Sell", page: "sell" }] },
   { title: "Company",  links: [{ label: "About Us", page: "about" }, { label: "Contact", page: "contact" }] },
   { title: "Connect",  links: [{ label: "Instagram", page: null }, { label: "Twitter", page: null }, { label: "LinkedIn", page: null }] },
 ];
@@ -18,7 +18,7 @@ export default function Footer({ onNav }) {
               <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: C.white }}>Valora</span>
             </div>
             <p style={{ fontSize: 14, lineHeight: 1.8, maxWidth: 280 }}>
-              Your trusted platform for buying, renting, and selling real estate. Find your perfect space.
+              Your trusted platform for buying, renting, and selling real estate in North Macedonia.
             </p>
           </div>
           {COLS.map(col => (
@@ -28,8 +28,7 @@ export default function Footer({ onNav }) {
                 <div key={lk.label} style={{ marginBottom: 10 }}>
                   <button onClick={() => lk.page && onNav(lk.page)} style={{
                     background: "none", border: "none", color: "rgba(255,255,255,0.6)",
-                    cursor: lk.page ? "pointer" : "default", fontSize: 14, padding: 0,
-                    transition: "color 0.15s",
+                    cursor: lk.page ? "pointer" : "default", fontSize: 14, padding: 0, transition: "color 0.15s",
                   }}
                     onMouseEnter={e => lk.page && (e.target.style.color = C.accent)}
                     onMouseLeave={e => (e.target.style.color = "rgba(255,255,255,0.6)")}
@@ -43,7 +42,7 @@ export default function Footer({ onNav }) {
         </div>
         <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: 24, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
           <p style={{ fontSize: 13 }}>© {new Date().getFullYear()} Valora. All rights reserved.</p>
-          <p style={{ fontSize: 13 }}>Made with ❤️ for real estate, reimagined.</p>
+          <p style={{ fontSize: 13 }}>Real estate, reimagined for North Macedonia.</p>
         </div>
       </div>
     </footer>

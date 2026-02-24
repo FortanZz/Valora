@@ -3,11 +3,11 @@ import ListingsGrid from "../components/ListingsGrid";
 import C from "../constants/colors";
 
 const ALL_TYPES  = [
-  { value: "", label: "All Types" },
-  { value: "house",     label: "🏠 Houses" },
-  { value: "apartment", label: "🏢 Apartments" },
-  { value: "office",    label: "🏙 Offices" },
-  { value: "land",      label: "🌿 Land" },
+  { value: "",          label: "All Types"   },
+  { value: "house",     label: "Houses"      },
+  { value: "apartment", label: "Apartments"  },
+  { value: "office",    label: "Offices"     },
+  { value: "land",      label: "Land"        },
 ];
 const RENT_TYPES = ALL_TYPES.filter(t => t.value !== "land");
 
@@ -39,7 +39,7 @@ export default function BrowsePage({ listings, listingMode, initialType, query, 
     <div className="fade-in">
       <div style={{ background: C.white, borderBottom: `1px solid ${C.sand}`, padding: "16px 24px" }}>
         <div style={{ maxWidth: 1240, margin: "0 auto", display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
-          <input className="input-field" style={{ maxWidth: 280 }} placeholder="Search city, state, type..."
+          <input className="input-field" style={{ maxWidth: 280 }} placeholder="Search city or property type..."
             value={searchInput} onChange={e => setSearchInput(e.target.value)} />
           <select className="input-field" style={{ maxWidth: 180 }} value={typeFilter} onChange={e => setTypeFilter(e.target.value)}>
             {typeOptions.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}

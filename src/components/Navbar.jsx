@@ -3,30 +3,26 @@ import ValoraLogo from "./ValoraLogo";
 import C from "../constants/colors";
 
 const BUY_ITEMS  = [
-  { label: "Houses",     icon: "🏠" },
-  { label: "Apartments", icon: "🏢" },
-  { label: "Offices",    icon: "🏙" },
-  { label: "Land",       icon: "🌿" },
+  { label: "Houses"     },
+  { label: "Apartments" },
+  { label: "Offices"    },
+  { label: "Land"       },
 ];
 const RENT_ITEMS = [
-  { label: "Houses",     icon: "🏠" },
-  { label: "Apartments", icon: "🏢" },
-  { label: "Offices",    icon: "🏙" },
+  { label: "Houses"     },
+  { label: "Apartments" },
+  { label: "Offices"    },
 ];
 
 function NavBtn({ label, active, onClick, children }) {
   return (
-    <button
-      onClick={onClick}
-      style={{
-        background: "none", border: "none", cursor: "pointer",
-        padding: "8px 16px",
-        fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: 15,
-        color: active ? C.forest : C.charcoal,
-        borderBottom: active ? `2px solid ${C.forest}` : "2px solid transparent",
-        transition: "all 0.2s", display: "flex", alignItems: "center", gap: 4,
-      }}
-    >
+    <button onClick={onClick} style={{
+      background: "none", border: "none", cursor: "pointer", padding: "8px 16px",
+      fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: 15,
+      color: active ? C.forest : C.charcoal,
+      borderBottom: active ? `2px solid ${C.forest}` : "2px solid transparent",
+      transition: "all 0.2s", display: "flex", alignItems: "center", gap: 4,
+    }}>
       {label}{children}
     </button>
   );
@@ -59,19 +55,12 @@ export default function Navbar({ onNav, activePage, user, onAuth, onLogout, onLi
         height: 68, display: "flex", alignItems: "center", justifyContent: "space-between",
       }}>
 
-        {/* Logo */}
-        <button onClick={() => onNav("home")}
-          style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 12 }}>
+        <button onClick={() => onNav("home")} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 12 }}>
           <ValoraLogo size={38} />
-          <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 24, fontWeight: 700, color: C.forest }}>
-            Valora
-          </span>
+          <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 24, fontWeight: 700, color: C.forest }}>Valora</span>
         </button>
 
-        {/* Nav links */}
         <nav style={{ display: "flex", alignItems: "center", gap: 4 }}>
-
-          {/* BUY */}
           <div ref={buyRef} style={{ position: "relative" }}>
             <NavBtn label="Buy" active={activePage === "buy"} onClick={() => onNav("buy")}
               onMouseEnter={() => { setBuyOpen(true); setRentOpen(false); }}>
@@ -82,14 +71,13 @@ export default function Navbar({ onNav, activePage, user, onAuth, onLogout, onLi
                 {BUY_ITEMS.map(it => (
                   <button key={it.label} className="nav-dropdown-item"
                     onClick={() => { onNav("buy", it.label.toLowerCase()); setBuyOpen(false); }}>
-                    <span className="icon">{it.icon}</span>{it.label}
+                    {it.label}
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-          {/* RENT */}
           <div ref={rentRef} style={{ position: "relative" }}>
             <NavBtn label="Rent" active={activePage === "rent"} onClick={() => onNav("rent")}
               onMouseEnter={() => { setRentOpen(true); setBuyOpen(false); }}>
@@ -100,7 +88,7 @@ export default function Navbar({ onNav, activePage, user, onAuth, onLogout, onLi
                 {RENT_ITEMS.map(it => (
                   <button key={it.label} className="nav-dropdown-item"
                     onClick={() => { onNav("rent", it.label.toLowerCase()); setRentOpen(false); }}>
-                    <span className="icon">{it.icon}</span>{it.label}
+                    {it.label}
                   </button>
                 ))}
               </div>
@@ -112,7 +100,6 @@ export default function Navbar({ onNav, activePage, user, onAuth, onLogout, onLi
           <NavBtn label="Contact" active={activePage === "contact"} onClick={() => onNav("contact")} />
         </nav>
 
-        {/* Auth */}
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           {user ? (
             <div ref={profileRef} style={{ position: "relative" }}>
@@ -125,9 +112,9 @@ export default function Navbar({ onNav, activePage, user, onAuth, onLogout, onLi
               </button>
               {profileOpen && (
                 <div className="nav-dropdown" style={{ right: 0, left: "auto", transform: "none", minWidth: 190 }}>
-                  <button className="nav-dropdown-item" style={{ fontWeight: 700, cursor: "default" }}>👋 {user.name}</button>
-                  <button className="nav-dropdown-item" onClick={() => { onListProperty(); setProfileOpen(false); }}>🏠 List a Property</button>
-                  <button className="nav-dropdown-item" style={{ color: "#c00" }} onClick={() => { onLogout(); setProfileOpen(false); }}>🚪 Sign Out</button>
+                  <button className="nav-dropdown-item" style={{ fontWeight: 700, cursor: "default" }}>{user.name}</button>
+                  <button className="nav-dropdown-item" onClick={() => { onListProperty(); setProfileOpen(false); }}>List a Property</button>
+                  <button className="nav-dropdown-item" style={{ color: "#c00" }} onClick={() => { onLogout(); setProfileOpen(false); }}>Sign Out</button>
                 </div>
               )}
             </div>

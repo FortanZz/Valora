@@ -25,7 +25,7 @@ function HeroSection({ onSearch }) {
           Find Your<br /><span style={{ color: C.accent }}>Perfect Space.</span>
         </h1>
         <p style={{ fontSize: 18, color: "rgba(255,255,255,0.8)", marginBottom: 40 }}>
-          Buy, rent, or list homes, apartments, offices &amp; land — all in one place.
+          Buy, rent, or list homes, apartments, offices and land across North Macedonia.
         </p>
 
         <div style={{ background: C.white, borderRadius: 14, padding: 8, display: "flex", gap: 8, flexWrap: "wrap", boxShadow: "0 8px 40px rgba(0,0,0,0.25)", maxWidth: 660, margin: "0 auto" }}>
@@ -38,22 +38,22 @@ function HeroSection({ onSearch }) {
           </select>
           <input
             style={{ flex: 1, border: "none", outline: "none", fontSize: 15, padding: "10px 12px", minWidth: 140 }}
-            placeholder="Search by city, state, or property type..."
+            placeholder="Search by city or property type..."
             value={q} onChange={e => setQ(e.target.value)}
             onKeyDown={e => e.key === "Enter" && onSearch(q, listingType)}
           />
           <button className="btn-primary" style={{ borderRadius: 8 }} onClick={() => onSearch(q, listingType)}>
-            🔍 Search
+            Search
           </button>
         </div>
 
         <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 24, flexWrap: "wrap" }}>
-          {[{ e: "🏠", l: "Houses" }, { e: "🏢", l: "Apartments" }, { e: "🏙", l: "Offices" }, { e: "🌿", l: "Land" }].map(tag => (
-            <span key={tag.l} onClick={() => onSearch(tag.l.toLowerCase(), listingType)} style={{
+          {["Houses", "Apartments", "Offices", "Land"].map(tag => (
+            <span key={tag} onClick={() => onSearch(tag.toLowerCase(), listingType)} style={{
               background: "rgba(255,255,255,0.15)", color: C.white, padding: "6px 18px",
               borderRadius: 20, fontSize: 13, cursor: "pointer", backdropFilter: "blur(4px)",
             }}>
-              {tag.e} {tag.l}
+              {tag}
             </span>
           ))}
         </div>
@@ -64,10 +64,10 @@ function HeroSection({ onSearch }) {
 
 function StatsBanner() {
   const stats = [
-    { n: "12,400+", l: "Active Listings" },
-    { n: "8,200+",  l: "Happy Clients" },
-    { n: "98",      l: "Cities Covered" },
-    { n: "$2.1B+",  l: "Property Value Sold" },
+    { n: "1,200+", l: "Active Listings" },
+    { n: "850+",   l: "Happy Clients" },
+    { n: "15",     l: "Cities Covered" },
+    { n: "48M+",  l: "Property Value Sold" },
   ];
   return (
     <section style={{ background: C.forest, padding: "48px 24px" }}>
@@ -88,7 +88,7 @@ export default function HomePage({ listings, onSearch, onView }) {
     <div className="fade-in">
       <HeroSection onSearch={onSearch} />
       <StatsBanner />
-      <ListingsGrid listings={listings.slice(0, 6)} title="Featured Listings" subtitle="Handpicked properties across the country" onView={onView} />
+      <ListingsGrid listings={listings.slice(0, 6)} title="Featured Listings" subtitle="Handpicked properties across North Macedonia" onView={onView} />
     </div>
   );
 }

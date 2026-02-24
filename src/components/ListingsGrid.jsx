@@ -8,10 +8,8 @@ export default function ListingsGrid({ listings, title, subtitle, onView }) {
       <p style={{ color: C.warmGray, marginBottom: 36 }}>
         {subtitle || `${listings.length} propert${listings.length === 1 ? "y" : "ies"} found`}
       </p>
-
       {listings.length === 0 ? (
         <div style={{ textAlign: "center", padding: "80px 20px", color: C.warmGray }}>
-          <div style={{ fontSize: 64, marginBottom: 16 }}>🏚</div>
           <p style={{ fontSize: 18 }}>No properties match your search. Try different filters.</p>
         </div>
       ) : (

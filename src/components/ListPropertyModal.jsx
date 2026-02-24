@@ -35,10 +35,18 @@ export default function ListPropertyModal({ user, onClose, onSubmit }) {
     if (!form.phone.trim())      { setErr("Phone number is required."); return; }
 
     onSubmit({
-      id: Date.now(), name: form.name, type: form.type, listing: form.listing,
-      price: +form.price, location: form.location, sqft: +form.sqft || 0,
-      beds: +form.beds || 0, baths: +form.baths || 0,
-      seller: form.sellerName, phone: form.phone, description: form.description,
+      id: Date.now(),
+      name: form.name,
+      type: form.type,
+      listing: form.listing,
+      price: +form.price,
+      location: form.location,
+      sqft: +form.sqft || 0,
+      beds: +form.beds || 0,
+      baths: +form.baths || 0,
+      seller: form.sellerName,
+      phone: form.phone,
+      description: form.description,
       img: form.images.trim() || "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&q=80",
     });
     setSuccess(true);
@@ -47,8 +55,7 @@ export default function ListPropertyModal({ user, onClose, onSubmit }) {
   if (success) return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-box" onClick={e => e.stopPropagation()} style={{ textAlign: "center" }}>
-        <div style={{ fontSize: 64, marginBottom: 16 }}>🏡</div>
-        <h2 className="section-title" style={{ fontSize: 26, marginBottom: 12 }}>Listing Published!</h2>
+        <h2 className="section-title" style={{ fontSize: 26, marginBottom: 12 }}>Listing Published</h2>
         <p style={{ color: C.warmGray, marginBottom: 28 }}>Your property is now live on Valora.</p>
         <button className="btn-primary" onClick={onClose}>Back to Browse</button>
       </div>
@@ -64,45 +71,56 @@ export default function ListPropertyModal({ user, onClose, onSubmit }) {
         <button onClick={onClose} style={{
           position: "absolute", top: 16, right: 20,
           background: "none", border: "none", fontSize: 24, cursor: "pointer", color: C.warmGray,
-        }}>✕</button>
+        }}>x</button>
 
         <h2 className="section-title" style={{ fontSize: 26, marginBottom: 6 }}>List Your Property</h2>
         <p style={{ color: C.warmGray, fontSize: 14, marginBottom: 28 }}>Fill in the details to publish your listing on Valora.</p>
 
         <form onSubmit={submit}>
+
           <div style={R}>
             <Label required>Property Name</Label>
-            <input className="input-field" placeholder="e.g. Sunset View Villa" value={form.name} onChange={e => set("name", e.target.value)} />
+            <input className="input-field" placeholder="e.g. Vodno Panorama House" value={form.name} onChange={e => set("name", e.target.value)} />
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 18 }}>
             <div>
               <Label required>Property Type</Label>
               <select className="input-field" value={form.type} onChange={e => set("type", e.target.value)}>
-                <option value="house">🏠 House</option>
-                <option value="apartment">🏢 Apartment</option>
-                <option value="office">🏙 Office</option>
-                <option value="land">🌿 Land</option>
+                <option value="house">House</option>
+                <option value="apartment">Apartment</option>
+                <option value="office">Office</option>
+                <option value="land">Land</option>
               </select>
             </div>
             <div>
               <Label required>Listing Type</Label>
-              <select className="input-field" value={form.listing} onChange={e => set("listing", e.target.value)} disabled={isLand} style={{ opacity: isLand ? 0.6 : 1 }}>
+              <select
+                className="input-field"
+                value={form.listing}
+                onChange={e => set("listing", e.target.value)}
+                disabled={isLand}
+                style={{ opacity: isLand ? 0.6 : 1 }}
+              >
                 <option value="buy">For Sale</option>
                 {!isLand && <option value="rent">For Rent</option>}
               </select>
-              {isLand && <p style={{ fontSize: 11, color: C.warmGray, marginTop: 5 }}>🌿 Land can only be listed for sale.</p>}
+              {isLand && (
+                <p style={{ fontSize: 11, color: C.warmGray, marginTop: 5 }}>
+                  Land can only be listed for sale.
+                </p>
+              )}
             </div>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 18 }}>
             <div>
               <Label required>Price {form.listing === "rent" ? "(per month)" : ""}</Label>
-              <input className="input-field" type="number" min="1" placeholder="e.g. 250000" value={form.price} onChange={e => set("price", e.target.value)} />
+              <input className="input-field" type="number" min="1" placeholder="e.g. 85000" value={form.price} onChange={e => set("price", e.target.value)} />
             </div>
             <div>
               <Label required>Location</Label>
-              <input className="input-field" placeholder="City, State" value={form.location} onChange={e => set("location", e.target.value)} />
+              <input className="input-field" placeholder="City, North Macedonia" value={form.location} onChange={e => set("location", e.target.value)} />
             </div>
           </div>
 
@@ -121,8 +139,8 @@ export default function ListPropertyModal({ user, onClose, onSubmit }) {
                 </>
               )}
               <div>
-                <Label>Square Footage</Label>
-                <input className="input-field" type="number" min="1" placeholder="1800" value={form.sqft} onChange={e => set("sqft", e.target.value)} />
+                <Label>Square Meters</Label>
+                <input className="input-field" type="number" min="1" placeholder="85" value={form.sqft} onChange={e => set("sqft", e.target.value)} />
               </div>
             </div>
           )}
@@ -148,16 +166,19 @@ export default function ListPropertyModal({ user, onClose, onSubmit }) {
               </div>
               <div>
                 <Label required>Phone Number</Label>
-                <input className="input-field" placeholder="+1 555-000-0000" value={form.phone} onChange={e => set("phone", e.target.value)} />
+                <input className="input-field" placeholder="+389 70 000 000" value={form.phone} onChange={e => set("phone", e.target.value)} />
               </div>
             </div>
           </div>
 
-          {err && <p style={{ color: "#c00", fontSize: 13, marginBottom: 14 }}>⚠️ {err}</p>}
+          {err && (
+            <p style={{ color: "#c00", fontSize: 13, marginBottom: 14 }}>{err}</p>
+          )}
 
           <button type="submit" className="btn-primary" style={{ width: "100%", padding: 14, fontSize: 16 }}>
-            🚀 Publish Listing
+            Publish Listing
           </button>
+
         </form>
       </div>
     </div>

@@ -31,7 +31,7 @@ export default function AuthModal({ mode, onClose, onSuccess }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-box" onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} style={{ position: "absolute", top: 16, right: 20, background: "none", border: "none", fontSize: 24, cursor: "pointer", color: C.warmGray }}>✕</button>
+        <button onClick={onClose} style={{ position: "absolute", top: 16, right: 20, background: "none", border: "none", fontSize: 24, cursor: "pointer", color: C.warmGray }}>x</button>
 
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}>
           <ValoraLogo size={52} />
@@ -57,7 +57,7 @@ export default function AuthModal({ mode, onClose, onSuccess }) {
             <label style={{ fontSize: 13, fontWeight: 600, display: "block", marginBottom: 6 }}>Password</label>
             <input className="input-field" type="password" placeholder="••••••••" value={form.password} onChange={e => set("password", e.target.value)} />
           </div>
-          {err && <p style={{ color: "#c00", fontSize: 13, marginBottom: 12 }}>⚠️ {err}</p>}
+          {err && <p style={{ color: "#c00", fontSize: 13, marginBottom: 12 }}>{err}</p>}
           <button type="submit" className="btn-primary" style={{ width: "100%", padding: 14, fontSize: 16 }}>
             {tab === "login" ? "Sign In" : "Create Account"}
           </button>

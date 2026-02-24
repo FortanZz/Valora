@@ -9,7 +9,7 @@ export default function ListingModal({ listing, onClose }) {
         <button onClick={onClose} style={{
           position: "absolute", top: 16, right: 20,
           background: "none", border: "none", fontSize: 24, cursor: "pointer", color: C.warmGray,
-        }}>✕</button>
+        }}>x</button>
 
         <img src={listing.img} alt={listing.name}
           style={{ width: "100%", height: 280, objectFit: "cover", borderRadius: 10, marginBottom: 24 }} />
@@ -20,17 +20,32 @@ export default function ListingModal({ listing, onClose }) {
         </div>
 
         <h2 className="section-title" style={{ fontSize: 26, marginBottom: 6 }}>{listing.name}</h2>
-        <p style={{ color: C.warmGray, marginBottom: 20 }}>📍 {listing.location}</p>
+        <p style={{ color: C.warmGray, marginBottom: 20 }}>{listing.location}</p>
 
         <div style={{ fontSize: 28, fontWeight: 700, color: C.forest, fontFamily: "'Playfair Display', serif", marginBottom: 20 }}>
-          {isRent ? `$${listing.price.toLocaleString()}/month` : `$${listing.price.toLocaleString()}`}
+          {isRent ? `€${listing.price.toLocaleString()}/month` : `€${listing.price.toLocaleString()}`}
         </div>
 
         {(listing.beds > 0 || listing.sqft > 0) && (
           <div style={{ display: "flex", gap: 24, marginBottom: 20, padding: "16px 20px", background: C.cream, borderRadius: 10 }}>
-            {listing.beds  > 0 && <div><div style={{ fontSize: 20, fontWeight: 700 }}>{listing.beds}</div><div style={{ fontSize: 12, color: C.warmGray }}>Bedrooms</div></div>}
-            {listing.baths > 0 && <div><div style={{ fontSize: 20, fontWeight: 700 }}>{listing.baths}</div><div style={{ fontSize: 12, color: C.warmGray }}>Bathrooms</div></div>}
-            {listing.sqft  > 0 && <div><div style={{ fontSize: 20, fontWeight: 700 }}>{listing.sqft.toLocaleString()}</div><div style={{ fontSize: 12, color: C.warmGray }}>Sq. Ft.</div></div>}
+            {listing.beds  > 0 && (
+              <div>
+                <div style={{ fontSize: 20, fontWeight: 700 }}>{listing.beds}</div>
+                <div style={{ fontSize: 12, color: C.warmGray }}>Bedrooms</div>
+              </div>
+            )}
+            {listing.baths > 0 && (
+              <div>
+                <div style={{ fontSize: 20, fontWeight: 700 }}>{listing.baths}</div>
+                <div style={{ fontSize: 12, color: C.warmGray }}>Bathrooms</div>
+              </div>
+            )}
+            {listing.sqft  > 0 && (
+              <div>
+                <div style={{ fontSize: 20, fontWeight: 700 }}>{listing.sqft.toLocaleString()}</div>
+                <div style={{ fontSize: 12, color: C.warmGray }}>m²</div>
+              </div>
+            )}
           </div>
         )}
 
@@ -44,7 +59,7 @@ export default function ListingModal({ listing, onClose }) {
           <div style={{ color: C.forest, fontWeight: 600, marginTop: 4, fontSize: 15 }}>{listing.phone}</div>
           <button className="btn-primary" style={{ marginTop: 14, width: "100%" }}
             onClick={() => window.open(`tel:${listing.phone}`)}>
-            📞 Call Seller
+            Call Seller
           </button>
         </div>
       </div>

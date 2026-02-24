@@ -2,10 +2,10 @@ import { useState } from "react";
 import C from "../constants/colors";
 
 const INFO = [
-  { icon: "📍", label: "Address", value: "1400 Valora Blvd, Suite 300\nAustin, TX 78701" },
-  { icon: "📞", label: "Phone",   value: "+1 (512) 000-9999" },
-  { icon: "✉️", label: "Email",   value: "hello@valora.app" },
-  { icon: "🕐", label: "Hours",   value: "Mon–Fri: 9am–6pm CST\nSat: 10am–2pm CST" },
+  { label: "Address", value: "Bul. Jane Sandanski 2\nSkopje, North Macedonia" },
+  { label: "Phone",   value: "+389 2 000 9999" },
+  { label: "Email",   value: "hello@valora.mk" },
+  { label: "Hours",   value: "Mon–Fri: 9am–6pm\nSat: 10am–2pm" },
 ];
 
 export default function ContactPage() {
@@ -31,7 +31,7 @@ export default function ContactPage() {
           Get In Touch
         </h1>
         <p style={{ color: "rgba(255,255,255,0.8)", fontSize: 17, maxWidth: 500, margin: "0 auto" }}>
-          We'd love to hear from you. Our team responds within 24 hours.
+          We are here to help. Our team responds within 24 hours.
         </p>
       </section>
 
@@ -39,20 +39,15 @@ export default function ContactPage() {
         <div>
           <h2 className="section-title" style={{ fontSize: 28, marginBottom: 28 }}>Contact Info</h2>
           {INFO.map(item => (
-            <div key={item.label} style={{ display: "flex", gap: 16, marginBottom: 28, alignItems: "flex-start" }}>
-              <div style={{ width: 46, height: 46, background: C.cream, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>
-                {item.icon}
-              </div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 3 }}>{item.label}</div>
-                <div style={{ color: C.warmGray, fontSize: 14, lineHeight: 1.7, whiteSpace: "pre-line" }}>{item.value}</div>
-              </div>
+            <div key={item.label} style={{ marginBottom: 28 }}>
+              <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>{item.label}</div>
+              <div style={{ color: C.warmGray, fontSize: 14, lineHeight: 1.7, whiteSpace: "pre-line" }}>{item.value}</div>
             </div>
           ))}
           <div>
             <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 14 }}>Follow Us</div>
             <div style={{ display: "flex", gap: 10 }}>
-              {["Instagram", "Twitter", "LinkedIn"].map(s => (
+              {["Instagram", "Facebook", "LinkedIn"].map(s => (
                 <span key={s} style={{ background: C.cream, padding: "8px 14px", borderRadius: 8, fontSize: 13, fontWeight: 600, color: C.forest, cursor: "pointer" }}>{s}</span>
               ))}
             </div>
@@ -62,12 +57,11 @@ export default function ContactPage() {
         <div className="card" style={{ padding: 40 }}>
           {sent ? (
             <div style={{ textAlign: "center", padding: "40px 0" }}>
-              <div style={{ fontSize: 60, marginBottom: 16 }}>✅</div>
-              <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: 24, marginBottom: 10 }}>Message Sent!</h3>
-              <p style={{ color: C.warmGray }}>Thanks for reaching out. We'll get back to you within 24 hours.</p>
+              <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: 24, marginBottom: 10 }}>Message Sent</h3>
+              <p style={{ color: C.warmGray }}>Thank you for reaching out. We will get back to you within 24 hours.</p>
               <button className="btn-primary" style={{ marginTop: 24 }}
                 onClick={() => { setSent(false); setForm({ name: "", email: "", subject: "", message: "" }); }}>
-                Send Another
+                Send Another Message
               </button>
             </div>
           ) : (
@@ -91,9 +85,9 @@ export default function ContactPage() {
                 <label style={{ fontSize: 13, fontWeight: 600, display: "block", marginBottom: 6 }}>Message <span style={{ color: "#c00" }}>*</span></label>
                 <textarea className="input-field" rows={5} placeholder="Write your message here..." value={form.message} onChange={e => set("message", e.target.value)} style={{ resize: "vertical" }} />
               </div>
-              {err && <p style={{ color: "#c00", fontSize: 13, marginBottom: 14 }}>⚠️ {err}</p>}
+              {err && <p style={{ color: "#c00", fontSize: 13, marginBottom: 14 }}>{err}</p>}
               <button type="submit" className="btn-primary" style={{ width: "100%", padding: 14, fontSize: 16 }}>
-                📨 Send Message
+                Send Message
               </button>
             </form>
           )}
