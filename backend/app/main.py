@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 
 from app.config import get_settings
-from app.routers import auth
+from app.routers import auth, properties
 from app.exceptions import format_validation_errors
 
 
@@ -33,6 +33,7 @@ async def validation_exception_handler(request, exc):
     )
 
 app.include_router(auth.router, prefix=f"{settings.api_prefix}/auth", tags=["auth"])
+app.include_router(properties.router, prefix=f"{settings.api_prefix}/properties", tags=["properties"])
 
 
 @app.get(f"{settings.api_prefix}/health")
