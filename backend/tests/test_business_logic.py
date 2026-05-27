@@ -5,13 +5,19 @@ from app.main import app
 client = TestClient(app)
 
 
-def register_user(email: str, password: str, full_name: str = "Test User"):
+def register_user(
+    email: str,
+    password: str,
+    first_name: str = "Test",
+    last_name: str = "User",
+):
     response = client.post(
         "/api/auth/register",
         json={
             "email": email,
             "password": password,
-            "full_name": full_name,
+            "first_name": first_name,
+            "last_name": last_name,
         },
     )
     assert response.status_code == 201
