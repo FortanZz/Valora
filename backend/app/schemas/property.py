@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, EmailStr, Field, model_validator, validator
 from typing import Optional, List
 from datetime import datetime
 from enum import Enum
@@ -27,7 +27,7 @@ class PropertyCreate(BaseModel):
     property_type: PropertyType = Field(..., description="Type of property")
     category: PropertyCategory = Field(..., description="Category (rent or sale)")
     contact_phone: str = Field(..., min_length=10, max_length=20, description="Contact phone number")
-    contact_email: str = Field(..., description="Contact email")
+    contact_email: EmailStr = Field(..., description="Contact email")
     num_bedrooms: Optional[int] = Field(None, ge=0, le=20, description="Number of bedrooms")
     num_bathrooms: Optional[int] = Field(None, ge=0, le=20, description="Number of bathrooms")
     area_sqm: Optional[float] = Field(None, gt=0, description="Area in square meters")
@@ -41,21 +41,17 @@ class PropertyCreate(BaseModel):
             raise ValueError("Price must be at least 100")
         return v
 
-    @validator("category", pre=True, always=True)
-    def validate_land_rent_constraint(cls, v, values):
-        """Enforce business rule: land cannot be rented"""
-        if "property_type" in values:
-            if values["property_type"] == PropertyType.LAND and v == PropertyCategory.RENT:
+    @model_validator(mode="after")
+    def validate_land_constraints(cls, values):
+        """Enforce land property business rules after full model validation"""
+        if values.property_type == PropertyType.LAND:
+            if values.category == PropertyCategory.RENT:
                 raise ValueError("Land properties cannot be listed for rent, only for sale")
-        return v
-
-    @validator("num_bedrooms", "num_bathrooms")
-    def validate_rooms_for_land(cls, v, values):
-        """Land properties should not have bedrooms/bathrooms"""
-        if "property_type" in values:
-            if values["property_type"] == PropertyType.LAND and v is not None and v > 0:
-                raise ValueError("Land properties should not have bedrooms or bathrooms")
-        return v
+            if values.num_bedrooms is not None and values.num_bedrooms > 0:
+                raise ValueError("Land properties should not have bedrooms")
+            if values.num_bathrooms is not None and values.num_bathrooms > 0:
+                raise ValueError("Land properties should not have bathrooms")
+        return values
 
     class Config:
         schema_extra = {
@@ -82,7 +78,7 @@ class PropertyUpdate(BaseModel):
     location: Optional[str] = Field(None, min_length=3, max_length=200)
     price: Optional[float] = Field(None, gt=0)
     contact_phone: Optional[str] = Field(None, min_length=10, max_length=20)
-    contact_email: Optional[str] = Field(None)
+    contact_email: Optional[EmailStr] = Field(None)
     num_bedrooms: Optional[int] = Field(None, ge=0, le=20)
     num_bathrooms: Optional[int] = Field(None, ge=0, le=20)
     area_sqm: Optional[float] = Field(None, gt=0)

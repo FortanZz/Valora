@@ -1,10 +1,9 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, Optional
+from typing import Dict
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
-
 from app.auth.dependencies import get_current_user_id
 from app.auth.jwt_handler import (
     create_access_token,
@@ -13,6 +12,7 @@ from app.auth.jwt_handler import (
     get_password_hash,
     verify_password,
 )
+from app.schemas.user import UserLogin, UserRegister, UserResponse
 
 
 router = APIRouter()
@@ -22,31 +22,14 @@ router = APIRouter()
 class StoredUser:
     id: int
     email: str
-    full_name: Optional[str]
+    first_name: str
+    last_name: str
     hashed_password: str
     created_at: datetime
 
 
-class UserRegister(BaseModel):
-    email: str = Field(..., min_length=3, max_length=255)
-    password: str = Field(..., min_length=8, max_length=128)
-    full_name: Optional[str] = Field(default=None, max_length=100)
-
-
-class UserLogin(BaseModel):
-    email: str = Field(..., min_length=3, max_length=255)
-    password: str = Field(..., min_length=1, max_length=128)
-
-
 class RefreshTokenRequest(BaseModel):
     refresh_token: str = Field(..., min_length=1)
-
-
-class UserResponse(BaseModel):
-    id: int
-    email: str
-    full_name: Optional[str]
-    created_at: datetime
 
 
 class AuthResponse(BaseModel):
@@ -72,7 +55,8 @@ def register(payload: UserRegister) -> AuthResponse:
     user = StoredUser(
         id=len(USERS_BY_ID) + 1,
         email=email,
-        full_name=_normalize_name(payload.full_name),
+        first_name=payload.first_name,
+        last_name=payload.last_name,
         hashed_password=get_password_hash(payload.password),
         created_at=datetime.utcnow(),
     )
@@ -145,7 +129,8 @@ def _to_user_response(user: StoredUser) -> UserResponse:
     return UserResponse(
         id=user.id,
         email=user.email,
-        full_name=user.full_name,
+        first_name=user.first_name,
+        last_name=user.last_name,
         created_at=user.created_at,
     )
 
@@ -159,11 +144,3 @@ def _normalize_email(email: str) -> str:
         )
 
     return normalized
-
-
-def _normalize_name(name: Optional[str]) -> Optional[str]:
-    if name is None:
-        return None
-
-    normalized = " ".join(name.split())
-    return normalized or None
