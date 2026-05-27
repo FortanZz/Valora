@@ -6,9 +6,12 @@ from pydantic import ValidationError
 from app.config import get_settings
 from app.routers import auth, properties
 from app.exceptions import format_validation_errors
+from app.database import init_db
 
 
 settings = get_settings()
+
+init_db()
 
 app = FastAPI(title=settings.app_name)
 

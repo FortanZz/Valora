@@ -1,6 +1,5 @@
-from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict
+from typing import Any, Dict
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
@@ -12,20 +11,11 @@ from app.auth.jwt_handler import (
     get_password_hash,
     verify_password,
 )
+from app.database import create_user, get_user_by_email, get_user_by_id
 from app.schemas.user import UserLogin, UserRegister, UserResponse
 
 
 router = APIRouter()
-
-
-@dataclass
-class StoredUser:
-    id: int
-    email: str
-    first_name: str
-    last_name: str
-    hashed_password: str
-    created_at: datetime
 
 
 class RefreshTokenRequest(BaseModel):
@@ -39,44 +29,35 @@ class AuthResponse(BaseModel):
     user: UserResponse
 
 
-USERS_BY_EMAIL: Dict[str, StoredUser] = {}
-USERS_BY_ID: Dict[int, StoredUser] = {}
-
 
 @router.post("/register", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
 def register(payload: UserRegister) -> AuthResponse:
     email = _normalize_email(payload.email)
-    if email in USERS_BY_EMAIL:
+    if get_user_by_email(email) is not None:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="A user with this email already exists",
         )
-
-    user = StoredUser(
-        id=len(USERS_BY_ID) + 1,
+    user_data = create_user(
         email=email,
         first_name=payload.first_name,
         last_name=payload.last_name,
         hashed_password=get_password_hash(payload.password),
         created_at=datetime.utcnow(),
     )
-    USERS_BY_EMAIL[email] = user
-    USERS_BY_ID[user.id] = user
-
-    return _build_auth_response(user)
+    return _build_auth_response(user_data)
 
 
 @router.post("/login", response_model=AuthResponse)
 def login(payload: UserLogin) -> AuthResponse:
-    user = USERS_BY_EMAIL.get(_normalize_email(payload.email))
-    if not user or not verify_password(payload.password, user.hashed_password):
+    user_data = get_user_by_email(_normalize_email(payload.email))
+    if not user_data or not verify_password(payload.password, user_data["hashed_password"]):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-
-    return _build_auth_response(user)
+    return _build_auth_response(user_data)
 
 
 @router.post("/refresh", response_model=AuthResponse)
@@ -91,47 +72,44 @@ def refresh(payload: RefreshTokenRequest) -> AuthResponse:
             headers={"WWW-Authenticate": "Bearer"},
         ) from exc
 
-    user = USERS_BY_ID.get(user_id)
-    if not user:
+    user_data = get_user_by_id(user_id)
+    if not user_data:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User no longer exists",
             headers={"WWW-Authenticate": "Bearer"},
         )
-
-    return _build_auth_response(user)
+    return _build_auth_response(user_data)
 
 
 @router.get("/me", response_model=UserResponse)
 def get_me(current_user_id: int = Depends(get_current_user_id)) -> UserResponse:
-    user = USERS_BY_ID.get(current_user_id)
-    if not user:
+    user_data = get_user_by_id(current_user_id)
+    if not user_data:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User no longer exists",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    return _to_user_response(user_data)
 
-    return _to_user_response(user)
 
-
-def _build_auth_response(user: StoredUser) -> AuthResponse:
-    subject = str(user.id)
-    claims = {"email": user.email}
+def _build_auth_response(user: Dict[str, Any]) -> AuthResponse:
+    subject = str(user["id"])
+    claims = {"email": user["email"]}
     return AuthResponse(
         access_token=create_access_token(subject=subject, extra_claims=claims),
         refresh_token=create_refresh_token(subject=subject, extra_claims=claims),
         user=_to_user_response(user),
     )
 
-
-def _to_user_response(user: StoredUser) -> UserResponse:
+def _to_user_response(user: Dict[str, Any]) -> UserResponse:
     return UserResponse(
-        id=user.id,
-        email=user.email,
-        first_name=user.first_name,
-        last_name=user.last_name,
-        created_at=user.created_at,
+        id=user["id"],
+        email=user["email"],
+        first_name=user["first_name"],
+        last_name=user["last_name"],
+        created_at=user["created_at"],
     )
 
 
