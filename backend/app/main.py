@@ -1,19 +1,27 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 
 from app.config import get_settings
-from app.routers import auth, properties
 from app.exceptions import format_validation_errors
 from app.database import init_db
+from app.routers.auth import router as auth_router
+from app.routers.properties import router as properties_router
 
 
 settings = get_settings()
 
-init_db()
 
-app = FastAPI(title=settings.app_name)
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    init_db()
+    yield
+
+
+app = FastAPI(title=settings.app_name, lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -35,8 +43,8 @@ async def validation_exception_handler(request, exc):
         }
     )
 
-app.include_router(auth.router, prefix=f"{settings.api_prefix}/auth", tags=["auth"])
-app.include_router(properties.router, prefix=f"{settings.api_prefix}/properties", tags=["properties"])
+app.include_router(auth_router, prefix=f"{settings.api_prefix}/auth", tags=["auth"])
+app.include_router(properties_router, prefix=f"{settings.api_prefix}/properties", tags=["properties"])
 
 
 @app.get(f"{settings.api_prefix}/health")

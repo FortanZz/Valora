@@ -29,7 +29,7 @@ class TestUserSchemas:
         }
         with pytest.raises(ValidationError) as exc_info:
             UserRegister(**user_data)
-        assert "Password" in str(exc_info.value)
+        assert "at least 8 characters" in str(exc_info.value)
 
     def test_user_register_password_no_uppercase(self):
         """Test password without uppercase letter"""

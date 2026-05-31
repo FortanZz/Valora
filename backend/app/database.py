@@ -9,7 +9,7 @@ CONN: Optional[sqlite3.Connection] = None
 
 
 def _ensure_connection() -> sqlite3.Connection:
-    global CONN, DB_PATH
+    global CONN
     if CONN is None:
         uri = DB_PATH == ":memory:" or DB_PATH.startswith("file:")
         CONN = sqlite3.connect(DB_PATH, check_same_thread=False, uri=uri)
@@ -27,6 +27,13 @@ def init_db(path: Optional[str] = None) -> sqlite3.Connection:
         CONN.close()
         CONN = None
     return _ensure_connection()
+
+
+def close_db() -> None:
+    global CONN
+    if CONN is not None:
+        CONN.close()
+        CONN = None
 
 
 def _initialize_schema(conn: sqlite3.Connection) -> None:
@@ -69,6 +76,7 @@ def _initialize_schema(conn: sqlite3.Connection) -> None:
         conn.execute("CREATE INDEX IF NOT EXISTS idx_properties_type ON properties(property_type)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_properties_location ON properties(location)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_properties_price ON properties(price)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_properties_created_at ON properties(created_at)")
 
 
 def _parse_datetime(value: Any) -> Optional[datetime]:
@@ -77,6 +85,10 @@ def _parse_datetime(value: Any) -> Optional[datetime]:
     if isinstance(value, datetime):
         return value
     return datetime.fromisoformat(value)
+
+
+def _serialize_datetime(value: datetime) -> str:
+    return value.isoformat()
 
 
 def _row_to_user(row: Optional[sqlite3.Row]) -> Optional[Dict[str, Any]]:
@@ -92,7 +104,9 @@ def _row_to_user(row: Optional[sqlite3.Row]) -> Optional[Dict[str, Any]]:
     }
 
 
-def _row_to_property(row: sqlite3.Row) -> Dict[str, Any]:
+def _row_to_property(row: Optional[sqlite3.Row]) -> Optional[Dict[str, Any]]:
+    if row is None:
+        return None
     return {
         "id": row["id"],
         "owner_id": row["owner_id"],
@@ -117,19 +131,210 @@ def create_user(
     first_name: str,
     last_name: str,
     hashed_password: str,
-    import os
-    import sqlite3
-    from datetime import datetime
-    from pathlib import Path
-    from typing import Any, Dict, List, Optional
-        sql += " ORDER BY price ASC"
+    created_at: datetime,
+) -> Dict[str, Any]:
+    conn = _ensure_connection()
+    with conn:
+        cursor = conn.execute(
+            """
+            INSERT INTO users (email, first_name, last_name, hashed_password, created_at)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (
+                email,
+                first_name,
+                last_name,
+                hashed_password,
+                _serialize_datetime(created_at),
+            ),
+        )
+    user = get_user_by_id(cursor.lastrowid)
+    if user is None:
+        raise RuntimeError("Failed to create user")
+    return user
+
+
+def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
+    conn = _ensure_connection()
+    row = conn.execute(
+        "SELECT * FROM users WHERE email = ?",
+        (email,),
+    ).fetchone()
+    return _row_to_user(row)
+
+
+def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
+    conn = _ensure_connection()
+    row = conn.execute(
+        "SELECT * FROM users WHERE id = ?",
+        (user_id,),
+    ).fetchone()
+    return _row_to_user(row)
+
+
+def create_property(
+    owner_id: int,
+    title: str,
+    description: Optional[str],
+    location: str,
+    price: float,
+    property_type: str,
+    category: str,
+    contact_phone: str,
+    contact_email: str,
+    num_bedrooms: Optional[int],
+    num_bathrooms: Optional[int],
+    area_sqm: Optional[float],
+    created_at: datetime,
+    updated_at: datetime,
+) -> Dict[str, Any]:
+    conn = _ensure_connection()
+    with conn:
+        cursor = conn.execute(
+            """
+            INSERT INTO properties (
+                owner_id,
+                title,
+                description,
+                location,
+                price,
+                property_type,
+                category,
+                contact_phone,
+                contact_email,
+                num_bedrooms,
+                num_bathrooms,
+                area_sqm,
+                created_at,
+                updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                owner_id,
+                title,
+                description,
+                location,
+                price,
+                property_type,
+                category,
+                contact_phone,
+                contact_email,
+                num_bedrooms,
+                num_bathrooms,
+                area_sqm,
+                _serialize_datetime(created_at),
+                _serialize_datetime(updated_at),
+            ),
+        )
+    property_item = get_property_by_id(cursor.lastrowid)
+    if property_item is None:
+        raise RuntimeError("Failed to create property")
+    return property_item
+
+
+def get_property_by_id(property_id: int) -> Optional[Dict[str, Any]]:
+    conn = _ensure_connection()
+    row = conn.execute(
+        "SELECT * FROM properties WHERE id = ?",
+        (property_id,),
+    ).fetchone()
+    return _row_to_property(row)
+
+
+def update_property(
+    property_id: int,
+    updates: Dict[str, Any],
+    updated_at: datetime,
+) -> Optional[Dict[str, Any]]:
+    conn = _ensure_connection()
+    allowed_fields = {
+        "title",
+        "description",
+        "location",
+        "price",
+        "contact_phone",
+        "contact_email",
+        "num_bedrooms",
+        "num_bathrooms",
+        "area_sqm",
+    }
+    update_values = {
+        key: value
+        for key, value in updates.items()
+        if key in allowed_fields
+    }
+    update_values["updated_at"] = _serialize_datetime(updated_at)
+
+    assignments = ", ".join(f"{field} = ?" for field in update_values)
+    params = list(update_values.values())
+    params.append(property_id)
+
+    with conn:
+        conn.execute(
+            f"UPDATE properties SET {assignments} WHERE id = ?",
+            tuple(params),
+        )
+    return get_property_by_id(property_id)
+
+
+def delete_property(property_id: int) -> None:
+    conn = _ensure_connection()
+    with conn:
+        conn.execute(
+            "DELETE FROM properties WHERE id = ?",
+            (property_id,),
+        )
+
+
+def search_properties(
+    query: Optional[str] = None,
+    min_price: Optional[float] = None,
+    max_price: Optional[float] = None,
+    property_type: Optional[str] = None,
+    category: Optional[str] = None,
+    location: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 20,
+    sort_by: str = "newest",
+) -> List[Dict[str, Any]]:
+    conn = _ensure_connection()
+    clauses = []
+    params: List[Any] = []
+
+    if query:
+        like_query = f"%{query.strip()}%"
+        clauses.append("(title LIKE ? OR description LIKE ? OR location LIKE ?)")
+        params.extend([like_query, like_query, like_query])
+    if min_price is not None:
+        clauses.append("price >= ?")
+        params.append(min_price)
+    if max_price is not None:
+        clauses.append("price <= ?")
+        params.append(max_price)
+    if property_type:
+        clauses.append("property_type = ?")
+        params.append(property_type)
+    if category:
+        clauses.append("category = ?")
+        params.append(category)
+    if location:
+        clauses.append("location LIKE ?")
+        params.append(f"%{location.strip()}%")
+
+    sql = "SELECT * FROM properties"
+    if clauses:
+        sql += " WHERE " + " AND ".join(clauses)
+
+    if sort_by == "price-asc":
+        sql += " ORDER BY price ASC, datetime(created_at) DESC"
     elif sort_by == "price-desc":
-        sql += " ORDER BY price DESC"
+        sql += " ORDER BY price DESC, datetime(created_at) DESC"
     else:
-        sql += " ORDER BY datetime(created_at) DESC"
+        sql += " ORDER BY datetime(created_at) DESC, id DESC"
 
     sql += " LIMIT ? OFFSET ?"
     params.extend([limit, skip])
 
-    cursor = conn.execute(sql, tuple(params))
-    return [_row_to_property(row) for row in cursor.fetchall()]
+    rows = conn.execute(sql, tuple(params)).fetchall()
+    return [item for row in rows if (item := _row_to_property(row)) is not None]
