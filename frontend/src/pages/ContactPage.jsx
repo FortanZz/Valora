@@ -27,7 +27,7 @@ export default function ContactPage() {
   return (
     <div className="fade-in">
       <section style={{ background: `linear-gradient(135deg, ${C.forest}, ${C.forestMid})`, padding: "72px 24px", textAlign: "center" }}>
-        <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(32px,5vw,52px)", fontWeight: 700, color: C.white, marginBottom: 16 }}>
+        <h1 style={{ fontSize: "clamp(32px,5vw,52px)", fontWeight: 800, color: C.white, marginBottom: 16 }}>
           Get In Touch
         </h1>
         <p style={{ color: "rgba(255,255,255,0.8)", fontSize: 17, maxWidth: 500, margin: "0 auto" }}>
@@ -57,7 +57,7 @@ export default function ContactPage() {
         <div className="card" style={{ padding: 40 }}>
           {sent ? (
             <div style={{ textAlign: "center", padding: "40px 0" }}>
-              <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: 24, marginBottom: 10 }}>Message Sent</h3>
+              <h3 style={{ fontSize: 24, fontWeight: 800, marginBottom: 10 }}>Message Sent</h3>
               <p style={{ color: C.warmGray }}>Thank you for reaching out. We will get back to you within 24 hours.</p>
               <button className="btn-primary" style={{ marginTop: 24 }}
                 onClick={() => { setSent(false); setForm({ name: "", email: "", subject: "", message: "" }); }}>
@@ -66,7 +66,7 @@ export default function ContactPage() {
             </div>
           ) : (
             <form onSubmit={submit}>
-              <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: 22, marginBottom: 28 }}>Send a Message</h3>
+              <h3 style={{ fontSize: 22, fontWeight: 800, marginBottom: 28 }}>Send a Message</h3>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 16 }}>
                 <div>
                   <label style={{ fontSize: 13, fontWeight: 600, display: "block", marginBottom: 6 }}>Name <span style={{ color: "#c00" }}>*</span></label>

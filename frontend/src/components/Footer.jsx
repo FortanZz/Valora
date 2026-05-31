@@ -11,11 +11,11 @@ export default function Footer({ onNav }) {
   return (
     <footer style={{ background: C.charcoal, color: "rgba(255,255,255,0.7)", padding: "52px 24px 28px" }}>
       <div style={{ maxWidth: 1240, margin: "0 auto" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", gap: 40, marginBottom: 48 }}>
+        <div className="footer-grid">
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
               <ValoraLogo size={36} />
-              <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: C.white }}>Valora</span>
+              <span style={{ fontSize: 22, fontWeight: 800, color: C.white }}>Valora</span>
             </div>
             <p style={{ fontSize: 14, lineHeight: 1.8, maxWidth: 280 }}>
               Your trusted platform for buying, renting, and selling real estate in North Macedonia.
@@ -40,7 +40,7 @@ export default function Footer({ onNav }) {
             </div>
           ))}
         </div>
-        <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: 24, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+        <div className="footer-bottom">
           <p style={{ fontSize: 13 }}>© {new Date().getFullYear()} Valora. All rights reserved.</p>
           <p style={{ fontSize: 13 }}>Real estate, reimagined for North Macedonia.</p>
         </div>

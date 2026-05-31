@@ -1,6 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ListingsGrid from "../components/ListingsGrid";
-import C from "../constants/colors";
 
 const ALL_TYPES  = [
   { value: "",          label: "All Types"   },
@@ -11,10 +10,12 @@ const ALL_TYPES  = [
 ];
 const RENT_TYPES = ALL_TYPES.filter(t => t.value !== "land");
 
-export default function BrowsePage({ listings, listingMode, initialType, query, onView }) {
-  const [typeFilter,  setTypeFilter]  = useState(initialType || "");
-  const [sortBy,      setSortBy]      = useState("default");
+export default function BrowsePage({ listings, listingMode, typeFilter, query, sortBy, onTypeFilter, onSort, onSearch, onView }) {
   const [searchInput, setSearchInput] = useState(query || "");
+
+  useEffect(() => {
+    setSearchInput(query || "");
+  }, [query]);
 
   const typeOptions = listingMode === "rent" ? RENT_TYPES : ALL_TYPES;
 
@@ -37,21 +38,21 @@ export default function BrowsePage({ listings, listingMode, initialType, query, 
 
   return (
     <div className="fade-in">
-      <div style={{ background: C.white, borderBottom: `1px solid ${C.sand}`, padding: "16px 24px" }}>
-        <div style={{ maxWidth: 1240, margin: "0 auto", display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+      <div className="browse-toolbar">
+        <div className="browse-toolbar-inner">
           <input className="input-field" style={{ maxWidth: 280 }} placeholder="Search city or property type..."
-            value={searchInput} onChange={e => setSearchInput(e.target.value)} />
-          <select className="input-field" style={{ maxWidth: 180 }} value={typeFilter} onChange={e => setTypeFilter(e.target.value)}>
+            value={searchInput} onChange={e => { setSearchInput(e.target.value); onSearch(e.target.value); }} />
+          <select className="input-field" style={{ maxWidth: 180 }} value={typeFilter} onChange={e => onTypeFilter(e.target.value)}>
             {typeOptions.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
           </select>
-          <select className="input-field" style={{ maxWidth: 200 }} value={sortBy} onChange={e => setSortBy(e.target.value)}>
+          <select className="input-field" style={{ maxWidth: 200 }} value={sortBy} onChange={e => onSort(e.target.value)}>
             <option value="default">Sort: Default</option>
             <option value="price-asc">Price: Low to High</option>
             <option value="price-desc">Price: High to Low</option>
           </select>
           {(typeFilter || sortBy !== "default" || searchInput) && (
             <button className="btn-outline" style={{ padding: "10px 18px", fontSize: 13 }}
-              onClick={() => { setTypeFilter(""); setSortBy("default"); setSearchInput(""); }}>
+              onClick={() => { onTypeFilter(""); onSort("default"); onSearch(""); setSearchInput(""); }}>
               Clear Filters
             </button>
           )}

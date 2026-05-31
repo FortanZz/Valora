@@ -7,7 +7,8 @@ const Label = ({ children, required }) => (
   </label>
 );
 
-export default function ListPropertyModal({ user, onClose, onSubmit }) {
+export default function ListPropertyModal({ user, authToken, onClose, onSubmit }) {
+  const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8000/api";
   const [form, setForm] = useState({
     name: "", type: "house", listing: "buy", price: "", location: "",
     sqft: "", beds: "", baths: "", sellerName: user?.name || "",
@@ -33,23 +34,54 @@ export default function ListPropertyModal({ user, onClose, onSubmit }) {
     if (!form.location.trim())   { setErr("Location is required."); return; }
     if (!form.sellerName.trim()) { setErr("Seller name is required."); return; }
     if (!form.phone.trim())      { setErr("Phone number is required."); return; }
+    if (!authToken)              { setErr("Authentication is required to list a property."); return; }
 
-    onSubmit({
-      id: Date.now(),
-      name: form.name,
-      type: form.type,
-      listing: form.listing,
-      price: +form.price,
-      location: form.location,
-      sqft: +form.sqft || 0,
-      beds: +form.beds || 0,
-      baths: +form.baths || 0,
-      seller: form.sellerName,
-      phone: form.phone,
-      description: form.description,
-      img: form.images.trim() || "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&q=80",
-    });
-    setSuccess(true);
+    fetch(`${API_BASE}/properties/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${authToken}`,
+      },
+      body: JSON.stringify({
+        title: form.name,
+        description: form.description,
+        location: form.location,
+        price: +form.price,
+        property_type: form.type,
+        category: form.listing === "rent" ? "rent" : "sale",
+        contact_phone: form.phone,
+        contact_email: user?.email || "",
+        num_bedrooms: form.type === "land" ? null : (+form.beds || 0),
+        num_bathrooms: form.type === "land" ? null : (+form.baths || 0),
+        area_sqm: form.sqft ? +form.sqft : null,
+      }),
+    })
+      .then(async response => {
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.detail || "Unable to list property");
+        }
+
+        onSubmit({
+          id: data.id,
+          name: data.title,
+          type: data.property_type,
+          listing: data.category === "rent" ? "rent" : "buy",
+          price: data.price,
+          location: data.location,
+          sqft: data.area_sqm || 0,
+          beds: data.num_bedrooms || 0,
+          baths: data.num_bathrooms || 0,
+          seller: user?.name || data.contact_email,
+          phone: data.contact_phone,
+          description: data.description || "",
+          img: form.images.trim() || "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&q=80",
+        });
+        setSuccess(true);
+      })
+      .catch(error => {
+        setErr(error.message || "Unable to list property");
+      });
   }
 
   if (success) return (

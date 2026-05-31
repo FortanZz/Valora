@@ -9,13 +9,36 @@ export default function AuthModal({ mode, onClose, onSuccess }) {
 
   function set(k, v) { setForm(p => ({ ...p, [k]: v })); }
 
+  const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8000/api";
+
   function submit(e) {
     e.preventDefault();
     setErr("");
     if (tab === "register" && !form.name.trim()) { setErr("Name is required."); return; }
     if (!form.email.includes("@"))               { setErr("Enter a valid email."); return; }
-    if (form.password.length < 6)                { setErr("Password must be at least 6 characters."); return; }
-    onSuccess({ name: form.name || form.email.split("@")[0], email: form.email });
+    if (form.password.length < 8)                { setErr("Password must be at least 8 characters."); return; }
+
+    const [firstName, ...rest] = form.name.trim().split(" ");
+    const lastName = rest.length ? rest.join(" ") : firstName;
+    const payload = tab === "register"
+      ? { email: form.email, password: form.password, first_name: firstName, last_name: lastName }
+      : { email: form.email, password: form.password };
+
+    fetch(`${API_BASE}/auth/${tab}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+      .then(async response => {
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.detail || "Authentication failed");
+        }
+        onSuccess(data);
+      })
+      .catch(error => {
+        setErr(error.message || "Unable to authenticate");
+      });
   }
 
   const TabBtn = ({ id, label }) => (
