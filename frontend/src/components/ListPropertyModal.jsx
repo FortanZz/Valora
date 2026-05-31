@@ -36,9 +36,6 @@ export default function ListPropertyModal({ user, authToken, onClose, onSubmit }
     if (!form.phone.trim())      { setErr("Phone number is required."); return; }
     if (!authToken)              { setErr("Authentication is required to list a property."); return; }
 
-    const [firstName, ...rest] = form.sellerName.trim().split(" ");
-    const lastName = rest.length ? rest.join(" ") : firstName;
-
     fetch(`${API_BASE}/properties/`, {
       method: "POST",
       headers: {

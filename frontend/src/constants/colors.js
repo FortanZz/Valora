@@ -1,13 +1,15 @@
 const C = {
-  forest:      "#0D4A2A",
-  forestMid:   "#145C34",
-  forestLight: "#1A7040",
-  cream:       "#F7F5F0",
-  sand:        "#E8E3D8",
-  warmGray:    "#8C8880",
-  charcoal:    "#1C1C1C",
+  forest:      "#0B3D2E",
+  forestMid:   "#126347",
+  forestLight: "#17845C",
+  teal:        "#0F6B65",
+  cream:       "#F4F7F2",
+  sand:        "#DCE5DC",
+  warmGray:    "#6F7A72",
+  charcoal:    "#17201C",
   white:       "#FFFFFF",
-  accent:      "#C8A84B",
+  accent:      "#E0B84C",
+  clay:        "#B86646",
 };
 
 export default C;

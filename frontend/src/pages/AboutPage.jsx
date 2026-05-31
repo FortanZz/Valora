@@ -20,7 +20,7 @@ export default function AboutPage() {
     <div className="fade-in">
       <section style={{ background: `linear-gradient(135deg, ${C.forest}, ${C.forestMid})`, padding: "80px 24px", textAlign: "center" }}>
         <ValoraLogo size={64} />
-        <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(32px,5vw,56px)", fontWeight: 700, color: C.white, marginTop: 20, marginBottom: 16 }}>
+        <h1 style={{ fontSize: "clamp(32px,5vw,56px)", fontWeight: 800, color: C.white, marginTop: 20, marginBottom: 16 }}>
           About Valora
         </h1>
         <p style={{ color: "rgba(255,255,255,0.8)", fontSize: 18, maxWidth: 600, margin: "0 auto" }}>
@@ -39,8 +39,8 @@ export default function AboutPage() {
               Whether you are searching for a family home, a city apartment, a commercial office, or a plot of land — Valora brings every listing together in one professional platform built for North Macedonia.
             </p>
           </div>
-          <div style={{ background: C.cream, borderRadius: 20, padding: 40, textAlign: "center" }}>
-            <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 26, fontWeight: 700, color: C.forest, lineHeight: 1.4 }}>
+          <div style={{ background: C.cream, borderRadius: 8, padding: 40, textAlign: "center" }}>
+            <div style={{ fontSize: 26, fontWeight: 800, color: C.forest, lineHeight: 1.4 }}>
               "Real estate,<br />reimagined."
             </div>
           </div>
@@ -82,7 +82,7 @@ export default function AboutPage() {
       </section>
 
       <section style={{ background: C.forest, padding: "60px 24px", textAlign: "center" }}>
-        <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: 32, color: C.white, marginBottom: 16 }}>
+        <h2 style={{ fontSize: 32, fontWeight: 800, color: C.white, marginBottom: 16 }}>
           Ready to find your space?
         </h2>
         <p style={{ color: "rgba(255,255,255,0.75)", marginBottom: 28, fontSize: 16 }}>

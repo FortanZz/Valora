@@ -22,7 +22,7 @@ export default function ListingModal({ listing, onClose }) {
         <h2 className="section-title" style={{ fontSize: 26, marginBottom: 6 }}>{listing.name}</h2>
         <p style={{ color: C.warmGray, marginBottom: 20 }}>{listing.location}</p>
 
-        <div style={{ fontSize: 28, fontWeight: 700, color: C.forest, fontFamily: "'Playfair Display', serif", marginBottom: 20 }}>
+        <div style={{ fontSize: 28, fontWeight: 800, color: C.forest, marginBottom: 20 }}>
           {isRent ? `€${listing.price.toLocaleString()}/month` : `€${listing.price.toLocaleString()}`}
         </div>
 

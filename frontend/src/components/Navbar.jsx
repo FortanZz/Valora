@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import ValoraLogo from "./ValoraLogo";
-import C from "../constants/colors";
 
 const BUY_ITEMS  = [
   { label: "Houses"     },
@@ -14,15 +13,13 @@ const RENT_ITEMS = [
   { label: "Offices"    },
 ];
 
-function NavBtn({ label, active, onClick, children }) {
+function NavBtn({ label, active, onClick, children, ...props }) {
   return (
-    <button onClick={onClick} style={{
-      background: "none", border: "none", cursor: "pointer", padding: "8px 16px",
-      fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: 15,
-      color: active ? C.forest : C.charcoal,
-      borderBottom: active ? `2px solid ${C.forest}` : "2px solid transparent",
-      transition: "all 0.2s", display: "flex", alignItems: "center", gap: 4,
-    }}>
+    <button
+      className={`nav-btn${active ? " is-active" : ""}`}
+      onClick={onClick}
+      {...props}
+    >
       {label}{children}
     </button>
   );
@@ -45,26 +42,19 @@ export default function Navbar({ onNav, activePage, user, onAuth, onLogout, onLi
   }, []);
 
   return (
-    <header style={{
-      background: C.white, borderBottom: `1px solid ${C.sand}`,
-      position: "sticky", top: 0, zIndex: 200,
-      boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
-    }}>
-      <div style={{
-        maxWidth: 1240, margin: "0 auto", padding: "0 24px",
-        height: 68, display: "flex", alignItems: "center", justifyContent: "space-between",
-      }}>
+    <header className="nav-shell">
+      <div className="nav-inner">
 
-        <button onClick={() => onNav("home")} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 12 }}>
+        <button className="nav-brand" onClick={() => onNav("home")}>
           <ValoraLogo size={38} />
-          <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 24, fontWeight: 700, color: C.forest }}>Valora</span>
+          <span className="nav-wordmark">Valora</span>
         </button>
 
-        <nav style={{ display: "flex", alignItems: "center", gap: 4 }}>
+        <nav className="nav-links">
           <div ref={buyRef} style={{ position: "relative" }}>
             <NavBtn label="Buy" active={activePage === "buy"} onClick={() => onNav("buy")}
               onMouseEnter={() => { setBuyOpen(true); setRentOpen(false); }}>
-              <span style={{ fontSize: 11 }}>▼</span>
+              <span style={{ fontSize: 11 }}>v</span>
             </NavBtn>
             {buyOpen && (
               <div className="nav-dropdown" onMouseLeave={() => setBuyOpen(false)}>
@@ -81,7 +71,7 @@ export default function Navbar({ onNav, activePage, user, onAuth, onLogout, onLi
           <div ref={rentRef} style={{ position: "relative" }}>
             <NavBtn label="Rent" active={activePage === "rent"} onClick={() => onNav("rent")}
               onMouseEnter={() => { setRentOpen(true); setBuyOpen(false); }}>
-              <span style={{ fontSize: 11 }}>▼</span>
+              <span style={{ fontSize: 11 }}>v</span>
             </NavBtn>
             {rentOpen && (
               <div className="nav-dropdown" onMouseLeave={() => setRentOpen(false)}>
@@ -100,14 +90,10 @@ export default function Navbar({ onNav, activePage, user, onAuth, onLogout, onLi
           <NavBtn label="Contact" active={activePage === "contact"} onClick={() => onNav("contact")} />
         </nav>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div className="nav-actions">
           {user ? (
             <div ref={profileRef} style={{ position: "relative" }}>
-              <button onClick={() => setProfileOpen(p => !p)} style={{
-                background: C.forest, color: C.white, border: "none", borderRadius: "50%",
-                width: 40, height: 40, cursor: "pointer", fontWeight: 700, fontSize: 15,
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>
+              <button className="profile-button" onClick={() => setProfileOpen(p => !p)}>
                 {user.name[0].toUpperCase()}
               </button>
               {profileOpen && (
