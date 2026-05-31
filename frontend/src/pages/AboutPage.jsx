@@ -12,7 +12,7 @@ const VALUES = [
   { title: "Transparency", desc: "Every listing shows real prices, real contact info, and real details with no hidden fees." },
   { title: "Trust",        desc: "We verify sellers and maintain community standards across all listings on our platform." },
   { title: "Speed",        desc: "From search to seller contact in seconds. Modern real estate at the speed of life." },
-  { title: "Inclusivity",  desc: "From first-time renters to seasoned investors — Valora is built for everyone in North Macedonia." },
+  { title: "Inclusivity",  desc: "From first-time renters to seasoned investors, Valora is built for every property search." },
 ];
 
 export default function AboutPage() {
@@ -24,7 +24,7 @@ export default function AboutPage() {
           About Valora
         </h1>
         <p style={{ color: "rgba(255,255,255,0.8)", fontSize: 18, maxWidth: 600, margin: "0 auto" }}>
-          Reimagining real estate for everyone in North Macedonia — buyers, renters, sellers, and investors.
+          Reimagining real estate for buyers, renters, sellers, and investors.
         </p>
       </section>
 
@@ -33,10 +33,10 @@ export default function AboutPage() {
           <div>
             <h2 className="section-title" style={{ marginBottom: 20 }}>Our Mission</h2>
             <p style={{ color: C.warmGray, lineHeight: 1.85, fontSize: 16 }}>
-              Valora was built on a simple idea: finding, buying, renting, or selling a property should be transparent, fast, and stress-free. We connect property seekers directly with sellers — no hidden fees, no middlemen.
+              Valora was built on a simple idea: finding, buying, renting, or selling a property should be transparent, fast, and stress-free. We connect property seekers directly with sellers - no hidden fees, no middlemen.
             </p>
             <p style={{ color: C.warmGray, lineHeight: 1.85, fontSize: 16, marginTop: 16 }}>
-              Whether you are searching for a family home, a city apartment, a commercial office, or a plot of land — Valora brings every listing together in one professional platform built for North Macedonia.
+              Whether you are searching for a family home, a city apartment, a commercial office, or a plot of land, Valora brings every listing together in one professional platform.
             </p>
           </div>
           <div style={{ background: C.cream, borderRadius: 8, padding: 40, textAlign: "center" }}>

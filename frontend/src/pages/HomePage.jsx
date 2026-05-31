@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ValoraLogo from "../components/ValoraLogo";
 import ListingsGrid from "../components/ListingsGrid";
 import LISTINGS from "../data/listings";
@@ -6,13 +6,43 @@ import LISTINGS from "../data/listings";
 function HeroSection({ onSearch }) {
   const [q, setQ] = useState("");
   const [listingType, setListingType] = useState("buy");
+  const heroRef = useRef(null);
+  const pointerRef = useRef({
+    currentX: 50,
+    currentY: 42,
+    targetX: 50,
+    targetY: 42,
+  });
+
+  useEffect(() => {
+    let frameId;
+
+    function animatePointerGlow() {
+      const pointer = pointerRef.current;
+      pointer.currentX += (pointer.targetX - pointer.currentX) * 0.08;
+      pointer.currentY += (pointer.targetY - pointer.currentY) * 0.08;
+
+      if (heroRef.current) {
+        heroRef.current.style.setProperty("--mx", `${pointer.currentX}%`);
+        heroRef.current.style.setProperty("--my", `${pointer.currentY}%`);
+      }
+
+      frameId = requestAnimationFrame(animatePointerGlow);
+    }
+
+    frameId = requestAnimationFrame(animatePointerGlow);
+    return () => cancelAnimationFrame(frameId);
+  }, []);
 
   function handlePointerMove(event) {
     const rect = event.currentTarget.getBoundingClientRect();
-    const x = ((event.clientX - rect.left) / rect.width) * 100;
-    const y = ((event.clientY - rect.top) / rect.height) * 100;
-    event.currentTarget.style.setProperty("--mx", `${x}%`);
-    event.currentTarget.style.setProperty("--my", `${y}%`);
+    pointerRef.current.targetX = ((event.clientX - rect.left) / rect.width) * 100;
+    pointerRef.current.targetY = ((event.clientY - rect.top) / rect.height) * 100;
+  }
+
+  function resetPointerGlow() {
+    pointerRef.current.targetX = 50;
+    pointerRef.current.targetY = 42;
   }
 
   function submitSearch() {
@@ -20,7 +50,12 @@ function HeroSection({ onSearch }) {
   }
 
   return (
-    <section className="hero-section" onMouseMove={handlePointerMove}>
+    <section
+      ref={heroRef}
+      className="hero-section"
+      onMouseMove={handlePointerMove}
+      onMouseLeave={resetPointerGlow}
+    >
       <div className="hero-motion-grid" />
       <div className="hero-flow-lines" aria-hidden="true">
         <span />
@@ -32,7 +67,7 @@ function HeroSection({ onSearch }) {
         <div className="hero-copy fade-up">
           <div className="hero-kicker">
             <ValoraLogo size={28} />
-            Live property intelligence for North Macedonia
+            Live property intelligence for modern real estate
           </div>
 
           <h1 className="hero-title">
@@ -67,7 +102,7 @@ function HeroSection({ onSearch }) {
           </div>
 
           <div className="quick-tags">
-            {["Skopje", "Ohrid", "Apartments", "Offices", "Land"].map(tag => (
+            {["Lakewood", "Northgate", "Apartments", "Offices", "Land"].map(tag => (
               <button
                 key={tag}
                 className="quick-tag"
@@ -82,10 +117,10 @@ function HeroSection({ onSearch }) {
         <div className="hero-market-panel" aria-hidden="true">
           <div className="market-card featured">
             <div className="market-label">Featured match</div>
-            <div className="market-title">Karpos Luxury Apartment</div>
+            <div className="market-title">Lakewood Glass House</div>
             <div className="market-row">
-              <span className="market-price">EUR 92k</span>
-              <span className="market-meta">3 beds / 110 sqm</span>
+              <span className="market-price">EUR 685k</span>
+              <span className="market-meta">4 beds / 340 sqm</span>
             </div>
           </div>
 
@@ -93,7 +128,7 @@ function HeroSection({ onSearch }) {
             <div className="market-row">
               <div>
                 <div className="market-label">Demand pulse</div>
-                <div className="market-title">Skopje Center</div>
+                <div className="market-title">Northgate</div>
               </div>
               <span className="market-price">+18%</span>
             </div>
@@ -116,11 +151,12 @@ function HeroSection({ onSearch }) {
 }
 
 function StatsBanner() {
+  const cityCount = new Set(LISTINGS.map(item => item.location.split(",")[0].trim())).size;
   const stats = [
-    { n: "1,200+", l: "Active Listings" },
-    { n: "850+", l: "Happy Clients" },
-    { n: "15", l: "Cities Covered" },
-    { n: "48M+", l: "Property Value Sold" },
+    { n: `${LISTINGS.length}+`, l: "Seeded Listings" },
+    { n: `${cityCount}`, l: "Cities Covered" },
+    { n: "4", l: "Property Types" },
+    { n: "Live", l: "Backend Ready" },
   ];
 
   return (
@@ -147,7 +183,7 @@ export default function HomePage({ listings, onSearch, onView }) {
       <ListingsGrid
         listings={featuredListings}
         title="Featured Listings"
-        subtitle="Handpicked properties across North Macedonia"
+        subtitle="Handpicked demo properties across every category"
         onView={onView}
       />
     </div>

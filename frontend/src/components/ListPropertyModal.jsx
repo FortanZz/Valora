@@ -152,7 +152,7 @@ export default function ListPropertyModal({ user, authToken, onClose, onSubmit }
             </div>
             <div>
               <Label required>Location</Label>
-              <input className="input-field" placeholder="City, North Macedonia" value={form.location} onChange={e => set("location", e.target.value)} />
+              <input className="input-field" placeholder="City or neighborhood" value={form.location} onChange={e => set("location", e.target.value)} />
             </div>
           </div>
 

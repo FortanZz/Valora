@@ -8,8 +8,27 @@ import HomePage          from "./pages/HomePage";
 import BrowsePage        from "./pages/BrowsePage";
 import AboutPage         from "./pages/AboutPage";
 import ContactPage       from "./pages/ContactPage";
+import LISTINGS          from "./data/listings";
 
 const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8000/api";
+
+function mapApiProperty(property) {
+  return {
+    id: `api-${property.id}`,
+    listing: property.category === "rent" ? "rent" : "buy",
+    type: property.property_type,
+    name: property.title,
+    location: property.location,
+    price: property.price,
+    beds: property.num_bedrooms || 0,
+    baths: property.num_bathrooms || 0,
+    sqft: property.area_sqm || 0,
+    seller: property.contact_email,
+    phone: property.contact_phone,
+    description: property.description || "",
+    img: property.image_url || "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&q=80",
+  };
+}
 
 export default function App() {
   const [page,        setPage]        = useState("home");
@@ -17,7 +36,7 @@ export default function App() {
   const [typeFilter,  setTypeFilter]  = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy,      setSortBy]      = useState("default");
-  const [listings,    setListings]    = useState([]);
+  const [listings,    setListings]    = useState(LISTINGS);
   const [viewListing, setViewListing] = useState(null);
   const [authModal,   setAuthModal]   = useState(null);
   const [showList,    setShowList]    = useState(false);
@@ -44,23 +63,11 @@ export default function App() {
           throw new Error(`Failed to load properties: ${response.status}`);
         }
         const results = await response.json();
-        setListings(results.map(property => ({
-          id: property.id,
-          listing: property.category === "rent" ? "rent" : "buy",
-          type: property.property_type,
-          name: property.title,
-          location: property.location,
-          price: property.price,
-          beds: property.num_bedrooms || 0,
-          baths: property.num_bathrooms || 0,
-          sqft: property.area_sqm || 0,
-          seller: property.contact_email,
-          phone: property.contact_phone,
-          description: property.description || "",
-          img: property.image_url || "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&q=80",
-        })));
+        const apiListings = results.map(mapApiProperty);
+        setListings(apiListings.length ? [...apiListings, ...LISTINGS] : LISTINGS);
       } catch (error) {
         console.error(error);
+        setListings(LISTINGS);
       }
     }
 

@@ -148,11 +148,15 @@ button { -webkit-tap-highlight-color: transparent; }
   border-radius: 8px;
   box-shadow: var(--shadow-soft);
   overflow: hidden;
-  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  will-change: transform;
+  transition:
+    transform 0.34s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.34s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 0.34s ease;
 }
 
 .card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-3px);
   box-shadow: var(--shadow-lift);
   border-color: rgba(18, 99, 71, 0.24);
 }
@@ -330,7 +334,6 @@ button { -webkit-tap-highlight-color: transparent; }
   background:
     radial-gradient(circle at var(--mx) var(--my), rgba(224, 184, 76, 0.22), transparent 18rem),
     linear-gradient(180deg, rgba(7, 20, 15, 0.08), rgba(7, 20, 15, 0.36));
-  transition: background 0.18s ease;
 }
 
 .hero-motion-grid {
@@ -602,11 +605,14 @@ button { -webkit-tap-highlight-color: transparent; }
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.45s ease, filter 0.45s ease;
+  will-change: transform;
+  transition:
+    transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1),
+    filter 0.55s ease;
 }
 
 .listing-card:hover .listing-card-image {
-  transform: scale(1.06);
+  transform: scale(1.045);
   filter: saturate(1.08) contrast(1.03);
 }
 

@@ -2,10 +2,10 @@ import { useState } from "react";
 import C from "../constants/colors";
 
 const INFO = [
-  { label: "Address", value: "Bul. Jane Sandanski 2\nSkopje, North Macedonia" },
-  { label: "Phone",   value: "+389 2 000 9999" },
-  { label: "Email",   value: "hello@valora.mk" },
-  { label: "Hours",   value: "Mon–Fri: 9am–6pm\nSat: 10am–2pm" },
+  { label: "Address", value: "Valora Demo Office\nCentral District" },
+  { label: "Phone",   value: "+1 555 010 9000" },
+  { label: "Email",   value: "hello@valora.demo" },
+  { label: "Hours",   value: "Mon-Fri: 9am-6pm\nSat: 10am-2pm" },
 ];
 
 export default function ContactPage() {

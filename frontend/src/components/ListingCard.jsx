@@ -37,7 +37,7 @@ export default function ListingCard({ listing, onView }) {
         )}
 
         <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.sand}`, fontSize: 13, color: C.warmGray }}>
-          {listing.seller}
+          {listing.sourceName ? `Source: ${listing.sourceName}` : listing.seller}
         </div>
       </div>
     </div>

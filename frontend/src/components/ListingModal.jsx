@@ -57,6 +57,12 @@ export default function ListingModal({ listing, onClose }) {
           <div style={{ fontWeight: 600, marginBottom: 4 }}>Contact Seller</div>
           <div style={{ fontSize: 15 }}>{listing.seller}</div>
           <div style={{ color: C.forest, fontWeight: 600, marginTop: 4, fontSize: 15 }}>{listing.phone}</div>
+          {listing.sourceUrl && (
+            <button className="btn-outline" style={{ marginTop: 14, width: "100%" }}
+              onClick={() => window.open(listing.sourceUrl, "_blank", "noopener,noreferrer")}>
+              Open Source Listing
+            </button>
+          )}
           <button className="btn-primary" style={{ marginTop: 14, width: "100%" }}
             onClick={() => window.open(`tel:${listing.phone}`)}>
             Call Seller

@@ -18,7 +18,7 @@ export default function Footer({ onNav }) {
               <span style={{ fontSize: 22, fontWeight: 800, color: C.white }}>Valora</span>
             </div>
             <p style={{ fontSize: 14, lineHeight: 1.8, maxWidth: 280 }}>
-              Your trusted platform for buying, renting, and selling real estate in North Macedonia.
+              Your trusted platform for buying, renting, and selling real estate.
             </p>
           </div>
           {COLS.map(col => (
@@ -42,7 +42,7 @@ export default function Footer({ onNav }) {
         </div>
         <div className="footer-bottom">
           <p style={{ fontSize: 13 }}>© {new Date().getFullYear()} Valora. All rights reserved.</p>
-          <p style={{ fontSize: 13 }}>Real estate, reimagined for North Macedonia.</p>
+          <p style={{ fontSize: 13 }}>Real estate, reimagined for every move.</p>
         </div>
       </div>
     </footer>

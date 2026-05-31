@@ -56,6 +56,33 @@ The backend API runs at:
 http://127.0.0.1:8000
 ```
 
+## Frontend View Only
+
+Use this when you only want to see the web page and do not care about login or saving new listings.
+The app includes seeded demo listings with clean property images, so the homepage and browse pages still show data without the backend.
+
+```bash
+cd frontend
+npm ci
+REACT_APP_API_BASE=http://127.0.0.1:8000/api npm start
+```
+
+Open:
+
+```text
+http://localhost:3000
+```
+
+If the browser opens but the page is blank, stop the server with `Ctrl+C`, then run:
+
+```bash
+cd frontend
+rm -rf node_modules/.cache
+npm start
+```
+
+For the full app with auth, property creation, and SQLite persistence, run the backend command from the previous section first.
+
 ## Run Tests
 
 Backend tests:
@@ -101,3 +128,4 @@ rm backend/valora.db
 ```
 
 - If port `3000` or `8000` is already in use, stop the other process or choose another port. If the backend port changes, update `REACT_APP_API_BASE` when starting the frontend.
+- Seeded demo listing data lives in `frontend/src/data/listings.js`; backend listings are merged on top when the API returns data.
