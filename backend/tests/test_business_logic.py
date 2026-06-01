@@ -222,6 +222,40 @@ def test_search_filters_and_sorting_can_be_combined(client):
     assert [item["price"] for item in sorted_sale.json()] == [250000, 120000]
 
 
+def test_my_listings_returns_only_authenticated_users_properties(client):
+    register_user(client, "mine-owner@example.com")
+    owner_auth = login_user(client, "mine-owner@example.com")
+    register_user(client, "other-owner@example.com", password="OtherPass123")
+    other_auth = login_user(client, "other-owner@example.com", password="OtherPass123")
+
+    create_property(
+        client,
+        owner_auth["access_token"],
+        title="Owner Apartment",
+        contact_email="mine-owner@example.com",
+    )
+    create_property(
+        client,
+        other_auth["access_token"],
+        title="Other Apartment",
+        contact_email="other-owner@example.com",
+    )
+
+    response = client.get(
+        "/api/properties/mine",
+        headers=auth_headers(owner_auth["access_token"]),
+    )
+
+    assert response.status_code == 200
+    assert [item["title"] for item in response.json()] == ["Owner Apartment"]
+
+
+def test_my_listings_requires_authentication(client):
+    response = client.get("/api/properties/mine")
+
+    assert response.status_code == 401
+
+
 def test_land_rules_are_enforced_on_create_and_update(client):
     register_user(client, "land-owner@example.com")
     auth = login_user(client, "land-owner@example.com")

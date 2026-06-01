@@ -7,6 +7,7 @@ from app.auth.dependencies import get_current_user_id
 from app.database import (
     create_property as create_property_record,
     delete_property as delete_property_record,
+    get_properties_by_owner,
     get_property_by_id,
     get_user_by_id,
     search_properties as search_properties_db,
@@ -108,6 +109,17 @@ def search_properties_endpoint(
         sort_by=sort_by,
     )
     return [PropertyResponse(**item) for item in results]
+
+
+@router.get("/mine", response_model=List[PropertyResponse])
+def list_my_properties(
+    current_user_id: int = Depends(get_current_user_id),
+) -> List[PropertyResponse]:
+    _validate_user_exists(current_user_id)
+    return [
+        PropertyResponse(**item)
+        for item in get_properties_by_owner(current_user_id)
+    ]
 
 
 @router.get("/{property_id}", response_model=PropertyResponse)
