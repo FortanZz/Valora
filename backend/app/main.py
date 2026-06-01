@@ -9,6 +9,7 @@ from app.config import get_settings
 from app.exceptions import format_validation_errors
 from app.database import init_db
 from app.routers import api_v1_routers, auth_router
+from app.session import init_async_db
 
 
 settings = get_settings()
@@ -17,6 +18,7 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     init_db()
+    await init_async_db()
     yield
 
 
