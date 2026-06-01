@@ -8,6 +8,7 @@ import HomePage          from "./pages/HomePage";
 import BrowsePage        from "./pages/BrowsePage";
 import AboutPage         from "./pages/AboutPage";
 import ContactPage       from "./pages/ContactPage";
+import MyListingsPage    from "./pages/MyListingsPage";
 import LISTINGS          from "./data/listings";
 
 const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8000/api";
@@ -130,6 +131,8 @@ export default function App() {
         return <AboutPage />;
       case "contact":
         return <ContactPage />;
+      case "my-listings":
+        return <MyListingsPage authToken={authToken} onView={setViewListing} />;
       default:
         return <HomePage listings={listings} onSearch={handleSearch} onView={setViewListing} />;
     }
@@ -141,6 +144,7 @@ export default function App() {
         onNav={navigate} activePage={page} user={user}
         onAuth={m => setAuthModal(m)} onLogout={() => { setUser(null); setAuthToken(""); }}
         onListProperty={() => setShowList(true)}
+        onMyListings={() => navigate("my-listings")}
       />
 
       <main style={{ minHeight: "calc(100vh - 68px - 260px)" }}>
