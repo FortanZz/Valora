@@ -3,13 +3,17 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.exceptions import PropertyNotFoundException
 from app.models.property import Property
 from app.schemas.property import PropertyCreate, PropertyUpdate
 
 
-async def get_property(db: AsyncSession, id: UUID) -> Property | None:
+async def get_property(db: AsyncSession, id: UUID) -> Property:
     result = await db.execute(select(Property).where(Property.id == id))
-    return result.scalar_one_or_none()
+    db_property = result.scalar_one_or_none()
+    if db_property is None:
+        raise PropertyNotFoundException()
+    return db_property
 
 
 async def get_properties(
@@ -33,10 +37,8 @@ async def update_property(
     db: AsyncSession,
     id: UUID,
     property_in: PropertyUpdate,
-) -> Property | None:
+) -> Property:
     db_property = await get_property(db, id)
-    if db_property is None:
-        return None
 
     for field, value in property_in.model_dump(exclude_unset=True).items():
         setattr(db_property, field, value)
@@ -46,11 +48,8 @@ async def update_property(
     return db_property
 
 
-async def delete_property(db: AsyncSession, id: UUID) -> Property | None:
+async def delete_property(db: AsyncSession, id: UUID) -> Property:
     db_property = await get_property(db, id)
-    if db_property is None:
-        return None
-
     await db.delete(db_property)
     await db.commit()
     return db_property

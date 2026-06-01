@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 
 from app.config import get_settings
-from app.exceptions import format_validation_errors
+from app.exceptions import PropertyNotFoundException, format_validation_errors
 from app.database import init_db
 from app.routers import api_v1_routers, auth_router
 from app.session import init_async_db
@@ -31,6 +31,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.exception_handler(PropertyNotFoundException)
+async def property_not_found_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=status.HTTP_404_NOT_FOUND,
+        content={"detail": "Property not found"},
+    )
 
 
 @app.exception_handler(ValidationError)

@@ -1,7 +1,7 @@
 from typing import Annotated, List
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud import property as property_crud
@@ -24,13 +24,7 @@ async def list_properties(
 
 @router.get("/{id}", response_model=PropertyResponse)
 async def get_property(db: DbSession, id: UUID) -> PropertyResponse:
-    property_obj = await property_crud.get_property(db, id)
-    if property_obj is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Property not found",
-        )
-    return property_obj
+    return await property_crud.get_property(db, id)
 
 
 @router.post("/", response_model=PropertyResponse, status_code=status.HTTP_201_CREATED)
@@ -47,20 +41,9 @@ async def update_property(
     id: UUID,
     property_in: PropertyUpdate,
 ) -> PropertyResponse:
-    property_obj = await property_crud.update_property(db, id, property_in)
-    if property_obj is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Property not found",
-        )
-    return property_obj
+    return await property_crud.update_property(db, id, property_in)
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_property(db: DbSession, id: UUID) -> None:
-    deleted = await property_crud.delete_property(db, id)
-    if deleted is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Property not found",
-        )
+    await property_crud.delete_property(db, id)

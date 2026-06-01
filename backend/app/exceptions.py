@@ -40,6 +40,10 @@ class NotFoundException(HTTPException):
         )
 
 
+class PropertyNotFoundException(Exception):
+    """Raised when a property does not exist."""
+
+
 class UnauthorizedException(HTTPException):
     """User not authorized to perform action"""
     def __init__(self, detail: str = "Not authorized to perform this action"):
