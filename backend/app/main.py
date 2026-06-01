@@ -8,8 +8,7 @@ from pydantic import ValidationError
 from app.config import get_settings
 from app.exceptions import format_validation_errors
 from app.database import init_db
-from app.routers.auth import router as auth_router
-from app.routers.properties import router as properties_router
+from app.routers import api_v1_routers, auth_router
 
 
 settings = get_settings()
@@ -44,7 +43,9 @@ async def validation_exception_handler(request, exc):
     )
 
 app.include_router(auth_router, prefix=f"{settings.api_prefix}/auth", tags=["auth"])
-app.include_router(properties_router, prefix=f"{settings.api_prefix}/properties", tags=["properties"])
+
+for router in api_v1_routers:
+    app.include_router(router)
 
 
 @app.get(f"{settings.api_prefix}/health")
