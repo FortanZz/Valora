@@ -128,7 +128,7 @@ export default function App() {
           />
         );
       case "about":
-        return <AboutPage />;
+        return <AboutPage onBrowse={() => navigate("browse")} />;
       case "contact":
         return <ContactPage />;
       case "my-listings":

@@ -173,6 +173,23 @@ function StatsBanner() {
   );
 }
 
+function MarketNote() {
+  const rentals = LISTINGS.filter(item => item.listing === "rent").length;
+  const forSale = LISTINGS.length - rentals;
+
+  return (
+    <section className="market-note">
+      <div className="market-note-inner">
+        <span className="market-note-label">Today on Valora</span>
+        <p>
+          Compare {forSale} sale opportunities and {rentals} rentals across the
+          demo market before opening a listing.
+        </p>
+      </div>
+    </section>
+  );
+}
+
 export default function HomePage({ listings, onSearch, onView }) {
   const featuredListings = listings.length ? listings.slice(0, 6) : LISTINGS.slice(0, 6);
 
@@ -180,6 +197,7 @@ export default function HomePage({ listings, onSearch, onView }) {
     <div className="fade-in">
       <HeroSection onSearch={onSearch} />
       <StatsBanner />
+      <MarketNote />
       <ListingsGrid
         listings={featuredListings}
         title="Featured Listings"
