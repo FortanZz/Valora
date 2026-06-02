@@ -1,5 +1,6 @@
 from .user import UserRegister, UserLogin, UserResponse
 from .property import (
+    PaginatedResponse,
     PropertyBase,
     PropertyCategory,
     PropertyCreate,
@@ -18,4 +19,5 @@ __all__ = [
     "PropertyType",
     "PropertyUpdate",
     "PropertyResponse",
+    "PaginatedResponse",
 ]

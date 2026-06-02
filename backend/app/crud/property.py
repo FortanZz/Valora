@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.exceptions import PropertyNotFoundException
@@ -16,13 +16,27 @@ async def get_property(db: AsyncSession, id: UUID) -> Property:
     return db_property
 
 
+def _apply_location_search(query, search: str | None):
+    if search:
+        query = query.where(Property.location.ilike(f"%{search.strip()}%"))
+    return query
+
+
 async def get_properties(
     db: AsyncSession,
     skip: int = 0,
     limit: int = 100,
-) -> list[Property]:
-    result = await db.execute(select(Property).offset(skip).limit(limit))
-    return list(result.scalars().all())
+    search: str | None = None,
+) -> tuple[list[Property], int]:
+    base_query = _apply_location_search(select(Property), search)
+
+    total_result = await db.execute(
+        select(func.count()).select_from(base_query.subquery())
+    )
+    total = total_result.scalar_one()
+
+    result = await db.execute(base_query.offset(skip).limit(limit))
+    return list(result.scalars().all()), total
 
 
 async def create_property(db: AsyncSession, property_in: PropertyCreate) -> Property:

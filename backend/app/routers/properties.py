@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.auth.dependencies import get_current_user_id
 from app.database import (
+    count_properties,
     create_property as create_property_record,
     delete_property as delete_property_record,
     get_properties_by_owner,
@@ -14,6 +15,7 @@ from app.database import (
     update_property as update_property_record,
 )
 from app.schemas.property import (
+    PaginatedResponse,
     PropertyCategory,
     PropertyCreate,
     PropertyResponse,
@@ -77,12 +79,18 @@ def create_property(
     return PropertyResponse(**property_data)
 
 
-@router.get("/", response_model=List[PropertyResponse])
+@router.get("/", response_model=PaginatedResponse)
 def list_properties(
     skip: int = 0,
     limit: int = 20,
-) -> List[PropertyResponse]:
-    return [PropertyResponse(**item) for item in search_properties_db(skip=skip, limit=limit)]
+    search: Optional[str] = None,
+) -> PaginatedResponse:
+    items = search_properties_db(skip=skip, limit=limit, search=search)
+    total = count_properties(search=search)
+    return PaginatedResponse(
+        items=[PropertyResponse(**item) for item in items],
+        total=total,
+    )
 
 
 @router.get("/search", response_model=List[PropertyResponse])

@@ -72,8 +72,33 @@ async def test_list_properties(async_client):
     response = await async_client.get("/api/properties/?skip=0&limit=10")
 
     assert response.status_code == 200
-    assert isinstance(response.json(), list)
-    assert len(response.json()) >= 1
+    data = response.json()
+    assert "items" in data
+    assert "total" in data
+    assert isinstance(data["items"], list)
+    assert data["total"] >= 1
+    assert len(data["items"]) >= 1
+
+
+@pytest.mark.asyncio
+async def test_list_properties_search_by_location(async_client):
+    headers = await _auth_headers(async_client, email="search@example.com")
+    skopje_payload = _property_payload()
+    skopje_payload["location"] = "Skopje Center"
+    ohrid_payload = _property_payload()
+    ohrid_payload["title"] = "Ohrid Villa"
+    ohrid_payload["location"] = "Ohrid Lake"
+
+    await async_client.post("/api/properties/", json=skopje_payload, headers=headers)
+    await async_client.post("/api/properties/", json=ohrid_payload, headers=headers)
+
+    response = await async_client.get("/api/properties/?search=skopje")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 1
+    assert len(data["items"]) == 1
+    assert "skopje" in data["items"][0]["location"].lower()
 
 
 @pytest.mark.asyncio

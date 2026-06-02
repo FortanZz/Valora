@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import DateTime, Integer, Numeric, String, Text, Uuid, func
+from sqlalchemy import DateTime, Index, Integer, Numeric, String, Text, Uuid, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
@@ -10,6 +10,10 @@ from app.models.base import Base
 
 class Property(Base):
     __tablename__ = "properties"
+    __table_args__ = (
+        Index("ix_properties_price", "price"),
+        Index("ix_properties_location", "location"),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(
         Uuid,

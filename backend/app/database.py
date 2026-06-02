@@ -300,20 +300,21 @@ def delete_property(property_id: int) -> None:
         )
 
 
-def search_properties(
+def _property_search_clauses(
     query: Optional[str] = None,
     min_price: Optional[float] = None,
     max_price: Optional[float] = None,
     property_type: Optional[str] = None,
     category: Optional[str] = None,
     location: Optional[str] = None,
-    skip: int = 0,
-    limit: int = 20,
-    sort_by: str = "newest",
-) -> List[Dict[str, Any]]:
-    conn = _ensure_connection()
+    search: Optional[str] = None,
+) -> tuple[List[str], List[Any]]:
     clauses = []
     params: List[Any] = []
+
+    if search:
+        clauses.append("LOWER(location) LIKE ?")
+        params.append(f"%{search.strip().lower()}%")
 
     if query:
         like_query = f"%{query.strip()}%"
@@ -334,6 +335,60 @@ def search_properties(
     if location:
         clauses.append("location LIKE ?")
         params.append(f"%{location.strip()}%")
+
+    return clauses, params
+
+
+def count_properties(
+    query: Optional[str] = None,
+    min_price: Optional[float] = None,
+    max_price: Optional[float] = None,
+    property_type: Optional[str] = None,
+    category: Optional[str] = None,
+    location: Optional[str] = None,
+    search: Optional[str] = None,
+) -> int:
+    conn = _ensure_connection()
+    clauses, params = _property_search_clauses(
+        query=query,
+        min_price=min_price,
+        max_price=max_price,
+        property_type=property_type,
+        category=category,
+        location=location,
+        search=search,
+    )
+
+    sql = "SELECT COUNT(*) FROM properties"
+    if clauses:
+        sql += " WHERE " + " AND ".join(clauses)
+
+    row = conn.execute(sql, tuple(params)).fetchone()
+    return int(row[0]) if row else 0
+
+
+def search_properties(
+    query: Optional[str] = None,
+    min_price: Optional[float] = None,
+    max_price: Optional[float] = None,
+    property_type: Optional[str] = None,
+    category: Optional[str] = None,
+    location: Optional[str] = None,
+    search: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 20,
+    sort_by: str = "newest",
+) -> List[Dict[str, Any]]:
+    conn = _ensure_connection()
+    clauses, params = _property_search_clauses(
+        query=query,
+        min_price=min_price,
+        max_price=max_price,
+        property_type=property_type,
+        category=category,
+        location=location,
+        search=search,
+    )
 
     sql = "SELECT * FROM properties"
     if clauses:
