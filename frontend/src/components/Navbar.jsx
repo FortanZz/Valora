@@ -2,15 +2,15 @@ import { useState, useRef, useEffect } from "react";
 import ValoraLogo from "./ValoraLogo";
 
 const BUY_ITEMS  = [
-  { label: "Houses"     },
-  { label: "Apartments" },
-  { label: "Offices"    },
-  { label: "Land"       },
+  { label: "Houses",     value: "house"     },
+  { label: "Apartments", value: "apartment" },
+  { label: "Offices",    value: "office"    },
+  { label: "Land",       value: "land"      },
 ];
 const RENT_ITEMS = [
-  { label: "Houses"     },
-  { label: "Apartments" },
-  { label: "Offices"    },
+  { label: "Houses",     value: "house"     },
+  { label: "Apartments", value: "apartment" },
+  { label: "Offices",    value: "office"    },
 ];
 
 function NavBtn({ label, active, onClick, children, ...props }) {
@@ -25,7 +25,7 @@ function NavBtn({ label, active, onClick, children, ...props }) {
   );
 }
 
-export default function Navbar({ onNav, activePage, user, onAuth, onLogout, onListProperty }) {
+export default function Navbar({ onNav, activePage, user, onAuth, onLogout, onListProperty, onMyListings }) {
   const [buyOpen,     setBuyOpen]     = useState(false);
   const [rentOpen,    setRentOpen]    = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -60,7 +60,7 @@ export default function Navbar({ onNav, activePage, user, onAuth, onLogout, onLi
               <div className="nav-dropdown" onMouseLeave={() => setBuyOpen(false)}>
                 {BUY_ITEMS.map(it => (
                   <button key={it.label} className="nav-dropdown-item"
-                    onClick={() => { onNav("buy", it.label.toLowerCase()); setBuyOpen(false); }}>
+                    onClick={() => { onNav("buy", it.value); setBuyOpen(false); }}>
                     {it.label}
                   </button>
                 ))}
@@ -77,7 +77,7 @@ export default function Navbar({ onNav, activePage, user, onAuth, onLogout, onLi
               <div className="nav-dropdown" onMouseLeave={() => setRentOpen(false)}>
                 {RENT_ITEMS.map(it => (
                   <button key={it.label} className="nav-dropdown-item"
-                    onClick={() => { onNav("rent", it.label.toLowerCase()); setRentOpen(false); }}>
+                    onClick={() => { onNav("rent", it.value); setRentOpen(false); }}>
                     {it.label}
                   </button>
                 ))}
@@ -99,6 +99,7 @@ export default function Navbar({ onNav, activePage, user, onAuth, onLogout, onLi
               {profileOpen && (
                 <div className="nav-dropdown" style={{ right: 0, left: "auto", transform: "none", minWidth: 190 }}>
                   <button className="nav-dropdown-item" style={{ fontWeight: 700, cursor: "default" }}>{user.name}</button>
+                  <button className="nav-dropdown-item" onClick={() => { onMyListings(); setProfileOpen(false); }}>My Listings</button>
                   <button className="nav-dropdown-item" onClick={() => { onListProperty(); setProfileOpen(false); }}>List a Property</button>
                   <button className="nav-dropdown-item" style={{ color: "#c00" }} onClick={() => { onLogout(); setProfileOpen(false); }}>Sign Out</button>
                 </div>

@@ -242,6 +242,19 @@ def get_property_by_id(property_id: int) -> Optional[Dict[str, Any]]:
     return _row_to_property(row)
 
 
+def get_properties_by_owner(owner_id: int) -> List[Dict[str, Any]]:
+    conn = _ensure_connection()
+    rows = conn.execute(
+        """
+        SELECT * FROM properties
+        WHERE owner_id = ?
+        ORDER BY datetime(created_at) DESC, id DESC
+        """,
+        (owner_id,),
+    ).fetchall()
+    return [item for row in rows if (item := _row_to_property(row)) is not None]
+
+
 def update_property(
     property_id: int,
     updates: Dict[str, Any],
