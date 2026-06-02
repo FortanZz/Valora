@@ -56,6 +56,16 @@ The backend API runs at:
 http://127.0.0.1:8000
 ```
 
+## Database migrations (Alembic)
+
+Run these from the project root:
+
+```bash
+cd backend
+source .venv/bin/activate
+python -m alembic upgrade head
+```
+
 ## Frontend View Only
 
 Use this when you only want to see the web page and do not care about login or saving new listings.

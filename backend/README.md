@@ -23,6 +23,21 @@ source .venv/bin/activate
 python -m pytest -q
 ```
 
+## Database migrations (Alembic)
+
+```bash
+cd backend
+source .venv/bin/activate
+
+# Create a new migration
+python -m alembic revision --autogenerate -m "your message"
+
+# Apply migrations
+python -m alembic upgrade head
+```
+
+Note: the async SQLAlchemy tables are created via Alembic migrations (not `Base.metadata.create_all()` on startup). If you previously ran the app and created `valora_async.db` already, delete it (or point `DATABASE_URL` at a fresh DB file) before running the initial migration.
+
 ## Authentication Endpoints
 
 - `POST /api/auth/register`
