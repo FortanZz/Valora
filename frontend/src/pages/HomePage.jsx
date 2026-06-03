@@ -156,7 +156,6 @@ function StatsBanner() {
     { n: `${LISTINGS.length}+`, l: "Seeded Listings" },
     { n: `${cityCount}`, l: "Cities Covered" },
     { n: "4", l: "Property Types" },
-    { n: "Live", l: "Backend Ready" },
   ];
 
   return (
