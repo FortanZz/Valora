@@ -75,6 +75,7 @@ def create_property(
         area_sqm=payload.area_sqm,
         created_at=created_at,
         updated_at=created_at,
+        image_urls=payload.image_urls,
     )
     return PropertyResponse(**property_data)
 

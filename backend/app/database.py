@@ -9,6 +9,7 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
@@ -17,10 +18,11 @@ from sqlalchemy import (
     func,
     or_,
     select,
+    text,
 )
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import IntegrityError as SQLAlchemyIntegrityError
-from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship, sessionmaker
+from sqlalchemy.orm import DeclarativeBase, Mapped, Session, joinedload, mapped_column, relationship, sessionmaker
 from sqlalchemy.pool import StaticPool
 
 DB_PATH = os.getenv("VALORA_DB_PATH") or str(Path(__file__).parent.parent / "valora.db")
@@ -50,6 +52,10 @@ class UserRecord(Base):
 
 class PropertyRecord(Base):
     __tablename__ = "properties"
+    __table_args__ = (
+        Index("ix_properties_category_type_price", "category", "property_type", "price"),
+        Index("ix_properties_owner_created", "owner_id", "created_at"),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     owner_id: Mapped[int] = mapped_column(
@@ -72,6 +78,31 @@ class PropertyRecord(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
 
     owner: Mapped[UserRecord] = relationship(back_populates="properties")
+    images: Mapped[list["PropertyImageRecord"]] = relationship(
+        back_populates="property",
+        cascade="all, delete-orphan",
+        order_by="PropertyImageRecord.sort_order",
+    )
+
+
+class PropertyImageRecord(Base):
+    __tablename__ = "property_images"
+    __table_args__ = (
+        Index("ix_property_images_property_order", "property_id", "sort_order"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    property_id: Mapped[int] = mapped_column(
+        ForeignKey("properties.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    url: Mapped[str] = mapped_column(String(1000), nullable=False)
+    alt_text: Mapped[Optional[str]] = mapped_column(String(255))
+    sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+
+    property: Mapped[PropertyRecord] = relationship(back_populates="images")
 
 
 def _database_url(path: str) -> tuple[str, Dict[str, Any]]:
@@ -103,7 +134,36 @@ def _ensure_engine() -> Engine:
 
         SessionLocal = sessionmaker(ENGINE, expire_on_commit=False, future=True)
         Base.metadata.create_all(ENGINE)
+        _ensure_sqlite_indexes(ENGINE)
     return ENGINE
+
+
+def _ensure_sqlite_indexes(engine: Engine) -> None:
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                """
+                CREATE INDEX IF NOT EXISTS ix_properties_category_type_price
+                ON properties(category, property_type, price)
+                """
+            )
+        )
+        connection.execute(
+            text(
+                """
+                CREATE INDEX IF NOT EXISTS ix_properties_owner_created
+                ON properties(owner_id, created_at)
+                """
+            )
+        )
+        connection.execute(
+            text(
+                """
+                CREATE INDEX IF NOT EXISTS ix_property_images_property_order
+                ON property_images(property_id, sort_order)
+                """
+            )
+        )
 
 
 def init_db(path: Optional[str] = None) -> Engine:
@@ -162,6 +222,7 @@ def _row_to_user(row: Optional[UserRecord]) -> Optional[Dict[str, Any]]:
 def _row_to_property(row: Optional[PropertyRecord]) -> Optional[Dict[str, Any]]:
     if row is None:
         return None
+    image_urls = [image.url for image in row.images]
     return {
         "id": row.id,
         "owner_id": row.owner_id,
@@ -178,7 +239,13 @@ def _row_to_property(row: Optional[PropertyRecord]) -> Optional[Dict[str, Any]]:
         "area_sqm": row.area_sqm,
         "created_at": row.created_at,
         "updated_at": row.updated_at,
+        "image_url": image_urls[0] if image_urls else None,
+        "image_urls": image_urls,
     }
+
+
+def _property_select_with_images():
+    return select(PropertyRecord).options(joinedload(PropertyRecord.images))
 
 
 def create_user(
@@ -230,6 +297,7 @@ def create_property(
     area_sqm: Optional[float],
     created_at: datetime,
     updated_at: datetime,
+    image_urls: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     with _session_scope() as session:
         property_item = PropertyRecord(
@@ -248,6 +316,17 @@ def create_property(
             created_at=created_at,
             updated_at=updated_at,
         )
+        for index, url in enumerate(image_urls or []):
+            cleaned_url = url.strip()
+            if cleaned_url:
+                property_item.images.append(
+                    PropertyImageRecord(
+                        url=cleaned_url,
+                        alt_text=title,
+                        sort_order=index,
+                        created_at=created_at,
+                    )
+                )
         session.add(property_item)
         session.flush()
         return _row_to_property(property_item) or {}
@@ -255,16 +334,19 @@ def create_property(
 
 def get_property_by_id(property_id: int) -> Optional[Dict[str, Any]]:
     with _session_scope() as session:
-        return _row_to_property(session.get(PropertyRecord, property_id))
+        row = session.execute(
+            _property_select_with_images().where(PropertyRecord.id == property_id)
+        ).unique().scalar_one_or_none()
+        return _row_to_property(row)
 
 
 def get_properties_by_owner(owner_id: int) -> List[Dict[str, Any]]:
     with _session_scope() as session:
         rows = session.execute(
-            select(PropertyRecord)
+            _property_select_with_images()
             .where(PropertyRecord.owner_id == owner_id)
             .order_by(PropertyRecord.created_at.desc(), PropertyRecord.id.desc())
-        ).scalars()
+        ).unique().scalars()
         return [item for row in rows if (item := _row_to_property(row)) is not None]
 
 
@@ -387,7 +469,7 @@ def search_properties(
         location=location,
         search=search,
     )
-    statement = select(PropertyRecord)
+    statement = _property_select_with_images()
     if clauses:
         statement = statement.where(*clauses)
 
@@ -400,5 +482,5 @@ def search_properties(
 
     statement = statement.limit(limit).offset(skip)
     with _session_scope() as session:
-        rows = session.execute(statement).scalars()
+        rows = session.execute(statement).unique().scalars()
         return [item for row in rows if (item := _row_to_property(row)) is not None]

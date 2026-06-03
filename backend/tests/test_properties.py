@@ -81,6 +81,34 @@ async def test_list_properties(async_client):
 
 
 @pytest.mark.asyncio
+async def test_property_image_urls_round_trip_through_api(async_client):
+    headers = await _auth_headers(async_client, email="images@example.com")
+    payload = _property_payload()
+    payload["contact_email"] = "images@example.com"
+    payload["image_urls"] = [
+        "https://example.com/front.jpg",
+        "https://example.com/living-room.jpg",
+    ]
+
+    create_response = await async_client.post(
+        "/api/properties/",
+        json=payload,
+        headers=headers,
+    )
+    property_id = create_response.json()["id"]
+    get_response = await async_client.get(f"/api/properties/{property_id}")
+    list_response = await async_client.get("/api/properties/?skip=0&limit=10")
+
+    assert create_response.status_code == 201
+    assert create_response.json()["image_url"] == "https://example.com/front.jpg"
+    assert create_response.json()["image_urls"] == payload["image_urls"]
+    assert get_response.status_code == 200
+    assert get_response.json()["image_urls"] == payload["image_urls"]
+    assert list_response.status_code == 200
+    assert list_response.json()["items"][0]["image_urls"] == payload["image_urls"]
+
+
+@pytest.mark.asyncio
 async def test_list_properties_search_by_location(async_client):
     headers = await _auth_headers(async_client, email="search@example.com")
     skopje_payload = _property_payload()

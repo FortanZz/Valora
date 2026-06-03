@@ -2,7 +2,9 @@ import sqlite3
 from datetime import datetime, timedelta
 
 import pytest
+from sqlalchemy import inspect
 
+from app import database as database_module
 from app.database import (
     close_db,
     create_property,
@@ -126,6 +128,41 @@ def test_search_properties_combines_filters_and_pagination():
 
     assert len(results) == 1
     assert results[0]["title"] == "Premium Apartment"
+
+
+def test_property_images_are_persisted_in_order():
+    user = create_test_user()
+    prop = create_test_property(
+        user["id"],
+        image_urls=[
+            "https://example.com/front.jpg",
+            "https://example.com/kitchen.jpg",
+        ],
+    )
+
+    stored = get_property_by_id(prop["id"])
+    search_result = search_properties(query="database", limit=1)[0]
+
+    assert stored["image_url"] == "https://example.com/front.jpg"
+    assert stored["image_urls"] == [
+        "https://example.com/front.jpg",
+        "https://example.com/kitchen.jpg",
+    ]
+    assert search_result["image_urls"] == stored["image_urls"]
+
+
+def test_property_image_table_and_query_indexes_exist():
+    engine = database_module.ENGINE
+    assert engine is not None
+
+    inspector = inspect(engine)
+    property_indexes = {index["name"] for index in inspector.get_indexes("properties")}
+    image_indexes = {index["name"] for index in inspector.get_indexes("property_images")}
+
+    assert "property_images" in inspector.get_table_names()
+    assert "ix_properties_category_type_price" in property_indexes
+    assert "ix_properties_owner_created" in property_indexes
+    assert "ix_property_images_property_order" in image_indexes
 
 
 def test_foreign_key_prevents_orphan_properties():

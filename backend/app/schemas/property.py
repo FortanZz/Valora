@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
 
 
 class PropertyType(str, Enum):
@@ -43,7 +43,12 @@ class PropertyBase(BaseModel):
 
 
 class PropertyCreate(PropertyBase):
-    pass
+    image_urls: list[str] = Field(default_factory=list, max_length=10)
+
+    @field_validator("image_urls")
+    @classmethod
+    def validate_image_urls(cls, value: list[str]) -> list[str]:
+        return [url.strip() for url in value if url.strip()]
 
 
 class PropertyUpdate(BaseModel):
@@ -63,6 +68,8 @@ class PropertyResponse(PropertyBase):
 
     id: int
     owner_id: int
+    image_url: Optional[str] = None
+    image_urls: list[str] = Field(default_factory=list)
     created_at: datetime
     updated_at: datetime
 

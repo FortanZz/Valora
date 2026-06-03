@@ -54,6 +54,7 @@ export default function ListPropertyModal({ user, authToken, onClose, onSubmit }
         num_bedrooms: form.type === "land" ? null : (+form.beds || 0),
         num_bathrooms: form.type === "land" ? null : (+form.baths || 0),
         area_sqm: form.sqft ? +form.sqft : null,
+        image_urls: form.images.trim() ? [form.images.trim()] : [],
       }),
     })
       .then(async response => {
@@ -75,7 +76,7 @@ export default function ListPropertyModal({ user, authToken, onClose, onSubmit }
           seller: user?.name || data.contact_email,
           phone: data.contact_phone,
           description: data.description || "",
-          img: form.images.trim() || "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&q=80",
+          img: data.image_url || "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&q=80",
         });
         setSuccess(true);
       })
