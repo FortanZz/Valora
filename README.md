@@ -56,15 +56,11 @@ The backend API runs at:
 http://127.0.0.1:8000
 ```
 
-## Database migrations (Alembic)
+## Database
 
-Run these from the project root:
-
-```bash
-cd backend
-source .venv/bin/activate
-python -m alembic upgrade head
-```
+The backend uses the active SQLite/SQLAlchemy layer in `backend/app/database.py`.
+Tables are created automatically when the API starts and tests use an in-memory
+SQLite database.
 
 ## Frontend View Only
 
@@ -100,6 +96,7 @@ Backend tests:
 ```bash
 cd backend
 source .venv/bin/activate
+python -m pip install -r requirements.txt
 python -m pytest -q
 ```
 

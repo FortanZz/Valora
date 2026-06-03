@@ -23,32 +23,16 @@ Edit `.env` with your local values before running the app.
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `DATABASE_URL` | Async SQLAlchemy database URL | `sqlite+aiosqlite:///./valora_async.db` |
-| `DEBUG` | Enable SQLAlchemy query logging | `false` |
 | `JWT_SECRET_KEY` | Secret used to sign JWT tokens | *(required in production)* |
 | `JWT_ALGORITHM` | JWT signing algorithm | `HS256` |
 | `JWT_ACCESS_TOKEN_EXPIRE_MINUTES` | Access token lifetime | `30` |
 | `JWT_REFRESH_TOKEN_EXPIRE_DAYS` | Refresh token lifetime | `7` |
 | `BACKEND_CORS_ORIGINS` | Comma-separated allowed CORS origins | `http://localhost:3000,http://127.0.0.1:3000` |
 
-Legacy auth endpoints also use a SQLite database file (`valora.db`) created automatically on startup.
+## Database
 
-## Database migrations (Alembic)
-
-Apply migrations before first run if you use the async SQLAlchemy database:
-
-```bash
-cd backend
-source .venv/bin/activate
-python -m alembic upgrade head
-```
-
-Create a new migration after model changes:
-
-```bash
-python -m alembic revision --autogenerate -m "describe change"
-python -m alembic upgrade head
-```
+The active persistence layer is `app/database.py`, which uses SQLAlchemy with
+SQLite. The database file (`valora.db`) is created automatically on startup.
 
 ## Run the app
 
@@ -70,6 +54,7 @@ Useful URLs:
 ```bash
 cd backend
 source .venv/bin/activate
+python -m pip install -r requirements.txt
 python -m pytest -q
 ```
 
