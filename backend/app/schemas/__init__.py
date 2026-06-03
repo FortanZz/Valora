@@ -1,3 +1,5 @@
+from .favorite import FavoriteResponse
+from .message import MessageCreate, MessageResponse
 from .user import UserRegister, UserLogin, UserResponse
 from .property import (
     PaginatedResponse,
@@ -13,6 +15,9 @@ __all__ = [
     "UserRegister",
     "UserLogin",
     "UserResponse",
+    "FavoriteResponse",
+    "MessageCreate",
+    "MessageResponse",
     "PropertyBase",
     "PropertyCategory",
     "PropertyCreate",

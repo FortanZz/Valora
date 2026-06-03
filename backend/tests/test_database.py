@@ -8,10 +8,20 @@ from app import database as database_module
 from app.database import (
     close_db,
     create_property,
+    create_property_message,
     create_user,
+    delete_property,
+    favorite_property,
+    get_favorite_properties,
+    get_message_by_id,
     get_property_by_id,
+    get_received_messages,
+    get_sent_messages,
     get_user_by_email,
     init_db,
+    is_property_favorited,
+    mark_message_read,
+    remove_favorite,
     search_properties,
     update_property,
 )
@@ -158,11 +168,110 @@ def test_property_image_table_and_query_indexes_exist():
     inspector = inspect(engine)
     property_indexes = {index["name"] for index in inspector.get_indexes("properties")}
     image_indexes = {index["name"] for index in inspector.get_indexes("property_images")}
+    favorite_indexes = {index["name"] for index in inspector.get_indexes("favorites")}
+    message_indexes = {index["name"] for index in inspector.get_indexes("messages")}
+    favorite_uniques = {
+        constraint["name"]
+        for constraint in inspector.get_unique_constraints("favorites")
+    }
 
     assert "property_images" in inspector.get_table_names()
+    assert "favorites" in inspector.get_table_names()
+    assert "messages" in inspector.get_table_names()
     assert "ix_properties_category_type_price" in property_indexes
     assert "ix_properties_owner_created" in property_indexes
     assert "ix_property_images_property_order" in image_indexes
+    assert "ix_favorites_user_created" in favorite_indexes
+    assert "ix_favorites_property_created" in favorite_indexes
+    assert "uq_favorites_user_property" in favorite_uniques
+    assert "ix_messages_recipient_created" in message_indexes
+    assert "ix_messages_sender_created" in message_indexes
+    assert "ix_messages_property_created" in message_indexes
+
+
+def test_favorites_are_unique_and_list_favorited_properties():
+    user = create_test_user("favorite-user@example.com")
+    prop = create_test_property(
+        user["id"],
+        title="Favorite Apartment",
+        image_urls=["https://example.com/favorite.jpg"],
+    )
+
+    first = favorite_property(
+        user_id=user["id"],
+        property_id=prop["id"],
+        created_at=datetime(2026, 5, 31, 13, 0, 0),
+    )
+    duplicate = favorite_property(
+        user_id=user["id"],
+        property_id=prop["id"],
+        created_at=datetime(2026, 5, 31, 14, 0, 0),
+    )
+    favorites = get_favorite_properties(user["id"])
+
+    assert first["id"] == duplicate["id"]
+    assert is_property_favorited(user["id"], prop["id"]) is True
+    assert len(favorites) == 1
+    assert favorites[0]["id"] == prop["id"]
+    assert favorites[0]["image_url"] == "https://example.com/favorite.jpg"
+
+    assert remove_favorite(user["id"], prop["id"]) is True
+    assert remove_favorite(user["id"], prop["id"]) is False
+    assert is_property_favorited(user["id"], prop["id"]) is False
+
+
+def test_favorite_relationships_survive_property_delete():
+    user = create_test_user("cascade-favorite-user@example.com")
+    prop = create_test_property(user["id"], title="Temporary Favorite")
+    favorite_property(user["id"], prop["id"], datetime(2026, 5, 31, 13, 0, 0))
+
+    delete_property(prop["id"])
+
+    assert get_favorite_properties(user["id"]) == []
+
+
+def test_messages_create_list_and_mark_read():
+    owner = create_test_user("message-owner@example.com")
+    sender = create_test_user("message-sender@example.com")
+    prop = create_test_property(
+        owner["id"],
+        title="Message Apartment",
+        contact_email="message-owner@example.com",
+    )
+
+    message = create_property_message(
+        sender_id=sender["id"],
+        property_id=prop["id"],
+        body="Is this property available?",
+        created_at=datetime(2026, 5, 31, 13, 0, 0),
+    )
+    read = mark_message_read(
+        message["id"],
+        read_at=datetime(2026, 5, 31, 14, 0, 0),
+    )
+
+    assert message["sender_id"] == sender["id"]
+    assert message["recipient_id"] == owner["id"]
+    assert get_received_messages(owner["id"])[0]["id"] == message["id"]
+    assert get_sent_messages(sender["id"])[0]["id"] == message["id"]
+    assert read["read_at"] == datetime(2026, 5, 31, 14, 0, 0)
+    assert get_message_by_id(message["id"])["read_at"] == datetime(2026, 5, 31, 14, 0, 0)
+
+
+def test_message_history_keeps_null_property_after_property_delete():
+    owner = create_test_user("message-delete-owner@example.com")
+    sender = create_test_user("message-delete-sender@example.com")
+    prop = create_test_property(owner["id"], title="Message Delete Apartment")
+    message = create_property_message(
+        sender_id=sender["id"],
+        property_id=prop["id"],
+        body="Is this still listed?",
+        created_at=datetime(2026, 5, 31, 13, 0, 0),
+    )
+
+    delete_property(prop["id"])
+
+    assert get_message_by_id(message["id"])["property_id"] is None
 
 
 def test_foreign_key_prevents_orphan_properties():

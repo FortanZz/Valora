@@ -13,6 +13,7 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    UniqueConstraint,
     create_engine,
     event,
     func,
@@ -47,6 +48,20 @@ class UserRecord(Base):
     properties: Mapped[list["PropertyRecord"]] = relationship(
         back_populates="owner",
         cascade="all, delete-orphan",
+    )
+    favorites: Mapped[list["FavoriteRecord"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    sent_messages: Mapped[list["MessageRecord"]] = relationship(
+        back_populates="sender",
+        cascade="all, delete-orphan",
+        foreign_keys="MessageRecord.sender_id",
+    )
+    received_messages: Mapped[list["MessageRecord"]] = relationship(
+        back_populates="recipient",
+        cascade="all, delete-orphan",
+        foreign_keys="MessageRecord.recipient_id",
     )
 
 
@@ -83,6 +98,11 @@ class PropertyRecord(Base):
         cascade="all, delete-orphan",
         order_by="PropertyImageRecord.sort_order",
     )
+    favorites: Mapped[list["FavoriteRecord"]] = relationship(
+        back_populates="property",
+        cascade="all, delete-orphan",
+    )
+    messages: Mapped[list["MessageRecord"]] = relationship(back_populates="property")
 
 
 class PropertyImageRecord(Base):
@@ -103,6 +123,69 @@ class PropertyImageRecord(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
 
     property: Mapped[PropertyRecord] = relationship(back_populates="images")
+
+
+class FavoriteRecord(Base):
+    __tablename__ = "favorites"
+    __table_args__ = (
+        UniqueConstraint("user_id", "property_id", name="uq_favorites_user_property"),
+        Index("ix_favorites_user_created", "user_id", "created_at"),
+        Index("ix_favorites_property_created", "property_id", "created_at"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    property_id: Mapped[int] = mapped_column(
+        ForeignKey("properties.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+
+    user: Mapped[UserRecord] = relationship(back_populates="favorites")
+    property: Mapped[PropertyRecord] = relationship(back_populates="favorites")
+
+
+class MessageRecord(Base):
+    __tablename__ = "messages"
+    __table_args__ = (
+        Index("ix_messages_recipient_created", "recipient_id", "created_at"),
+        Index("ix_messages_sender_created", "sender_id", "created_at"),
+        Index("ix_messages_property_created", "property_id", "created_at"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    sender_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    recipient_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    property_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("properties.id", ondelete="SET NULL"),
+        index=True,
+    )
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    read_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
+
+    sender: Mapped[UserRecord] = relationship(
+        back_populates="sent_messages",
+        foreign_keys=[sender_id],
+    )
+    recipient: Mapped[UserRecord] = relationship(
+        back_populates="received_messages",
+        foreign_keys=[recipient_id],
+    )
+    property: Mapped[Optional[PropertyRecord]] = relationship(back_populates="messages")
 
 
 def _database_url(path: str) -> tuple[str, Dict[str, Any]]:
@@ -161,6 +244,46 @@ def _ensure_sqlite_indexes(engine: Engine) -> None:
                 """
                 CREATE INDEX IF NOT EXISTS ix_property_images_property_order
                 ON property_images(property_id, sort_order)
+                """
+            )
+        )
+        connection.execute(
+            text(
+                """
+                CREATE INDEX IF NOT EXISTS ix_favorites_user_created
+                ON favorites(user_id, created_at)
+                """
+            )
+        )
+        connection.execute(
+            text(
+                """
+                CREATE INDEX IF NOT EXISTS ix_favorites_property_created
+                ON favorites(property_id, created_at)
+                """
+            )
+        )
+        connection.execute(
+            text(
+                """
+                CREATE INDEX IF NOT EXISTS ix_messages_recipient_created
+                ON messages(recipient_id, created_at)
+                """
+            )
+        )
+        connection.execute(
+            text(
+                """
+                CREATE INDEX IF NOT EXISTS ix_messages_sender_created
+                ON messages(sender_id, created_at)
+                """
+            )
+        )
+        connection.execute(
+            text(
+                """
+                CREATE INDEX IF NOT EXISTS ix_messages_property_created
+                ON messages(property_id, created_at)
                 """
             )
         )
@@ -241,6 +364,31 @@ def _row_to_property(row: Optional[PropertyRecord]) -> Optional[Dict[str, Any]]:
         "updated_at": row.updated_at,
         "image_url": image_urls[0] if image_urls else None,
         "image_urls": image_urls,
+    }
+
+
+def _row_to_favorite(row: Optional[FavoriteRecord]) -> Optional[Dict[str, Any]]:
+    if row is None:
+        return None
+    return {
+        "id": row.id,
+        "user_id": row.user_id,
+        "property_id": row.property_id,
+        "created_at": row.created_at,
+    }
+
+
+def _row_to_message(row: Optional[MessageRecord]) -> Optional[Dict[str, Any]]:
+    if row is None:
+        return None
+    return {
+        "id": row.id,
+        "sender_id": row.sender_id,
+        "recipient_id": row.recipient_id,
+        "property_id": row.property_id,
+        "body": row.body,
+        "created_at": row.created_at,
+        "read_at": row.read_at,
     }
 
 
@@ -383,6 +531,136 @@ def delete_property(property_id: int) -> None:
         property_item = session.get(PropertyRecord, property_id)
         if property_item is not None:
             session.delete(property_item)
+
+
+def favorite_property(
+    user_id: int,
+    property_id: int,
+    created_at: datetime,
+) -> Optional[Dict[str, Any]]:
+    with _session_scope() as session:
+        if session.get(PropertyRecord, property_id) is None:
+            return None
+
+        existing = session.execute(
+            select(FavoriteRecord).where(
+                FavoriteRecord.user_id == user_id,
+                FavoriteRecord.property_id == property_id,
+            )
+        ).scalar_one_or_none()
+        if existing is not None:
+            return _row_to_favorite(existing)
+
+        favorite = FavoriteRecord(
+            user_id=user_id,
+            property_id=property_id,
+            created_at=created_at,
+        )
+        session.add(favorite)
+        session.flush()
+        return _row_to_favorite(favorite)
+
+
+def remove_favorite(user_id: int, property_id: int) -> bool:
+    with _session_scope() as session:
+        favorite = session.execute(
+            select(FavoriteRecord).where(
+                FavoriteRecord.user_id == user_id,
+                FavoriteRecord.property_id == property_id,
+            )
+        ).scalar_one_or_none()
+        if favorite is None:
+            return False
+        session.delete(favorite)
+        return True
+
+
+def is_property_favorited(user_id: int, property_id: int) -> bool:
+    with _session_scope() as session:
+        row = session.execute(
+            select(func.count())
+            .select_from(FavoriteRecord)
+            .where(
+                FavoriteRecord.user_id == user_id,
+                FavoriteRecord.property_id == property_id,
+            )
+        ).scalar_one()
+        return int(row) > 0
+
+
+def get_favorite_properties(user_id: int) -> List[Dict[str, Any]]:
+    with _session_scope() as session:
+        rows = session.execute(
+            select(FavoriteRecord)
+            .options(
+                joinedload(FavoriteRecord.property).joinedload(PropertyRecord.images)
+            )
+            .where(FavoriteRecord.user_id == user_id)
+            .order_by(FavoriteRecord.created_at.desc(), FavoriteRecord.id.desc())
+        ).unique().scalars()
+        return [
+            property_item
+            for favorite in rows
+            if (property_item := _row_to_property(favorite.property)) is not None
+        ]
+
+
+def create_property_message(
+    sender_id: int,
+    property_id: int,
+    body: str,
+    created_at: datetime,
+) -> Optional[Dict[str, Any]]:
+    with _session_scope() as session:
+        property_item = session.get(PropertyRecord, property_id)
+        if property_item is None:
+            return None
+
+        message = MessageRecord(
+            sender_id=sender_id,
+            recipient_id=property_item.owner_id,
+            property_id=property_id,
+            body=body,
+            created_at=created_at,
+        )
+        session.add(message)
+        session.flush()
+        return _row_to_message(message)
+
+
+def get_message_by_id(message_id: int) -> Optional[Dict[str, Any]]:
+    with _session_scope() as session:
+        return _row_to_message(session.get(MessageRecord, message_id))
+
+
+def get_received_messages(user_id: int) -> List[Dict[str, Any]]:
+    with _session_scope() as session:
+        rows = session.execute(
+            select(MessageRecord)
+            .where(MessageRecord.recipient_id == user_id)
+            .order_by(MessageRecord.created_at.desc(), MessageRecord.id.desc())
+        ).scalars()
+        return [item for row in rows if (item := _row_to_message(row)) is not None]
+
+
+def get_sent_messages(user_id: int) -> List[Dict[str, Any]]:
+    with _session_scope() as session:
+        rows = session.execute(
+            select(MessageRecord)
+            .where(MessageRecord.sender_id == user_id)
+            .order_by(MessageRecord.created_at.desc(), MessageRecord.id.desc())
+        ).scalars()
+        return [item for row in rows if (item := _row_to_message(row)) is not None]
+
+
+def mark_message_read(message_id: int, read_at: datetime) -> Optional[Dict[str, Any]]:
+    with _session_scope() as session:
+        message = session.get(MessageRecord, message_id)
+        if message is None:
+            return None
+        message.read_at = read_at
+        session.flush()
+        return _row_to_message(message)
 
 
 def _property_search_clauses(
